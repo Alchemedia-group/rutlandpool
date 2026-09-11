@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFramesForFixture, getPlayersForTeam } from "@/lib/data";
 import { bestMatchWithScore } from "@/lib/fuzzyMatch";
+import { ScoresheetUploadForm } from "@/components/ScoresheetUploadForm";
 import type { Fixture, Team } from "@/lib/types";
-import { addSuggestedPlayer, clearScoresheet, deleteFrame, saveFrame, uploadScoresheet } from "../../actions";
+import { addSuggestedPlayer, clearScoresheet, deleteFrame, saveFrame } from "../../actions";
 
 // OCR extraction can take longer than the default function timeout, and
 // this also covers the Server Actions invoked from this page.
@@ -117,29 +118,17 @@ function ScoresheetPanel({
   return (
     <div className="mb-6 rounded border border-ink/10 bg-cream-card p-4">
       <p className="mb-2 text-sm font-semibold">Scoresheet photo</p>
-      <form action={uploadScoresheet} className="flex flex-wrap items-center gap-3">
-        <input type="hidden" name="fixture_id" value={fixtureId} />
-        <input
-          type="file"
-          name="photo"
-          accept="image/*"
-          capture="environment"
-          required
-          className="text-sm"
-        />
-        <button type="submit" className="rounded bg-felt-dark px-3 py-1.5 text-sm text-white">
-          Upload &amp; scan
-        </button>
+      <div className="flex flex-wrap items-center gap-3">
+        <ScoresheetUploadForm fixtureId={fixtureId} />
         {scoresheetUrl && (
-          <button
-            formAction={clearScoresheet}
-            formNoValidate
-            className="text-sm text-loss hover:underline"
-          >
-            Remove photo
-          </button>
+          <form action={clearScoresheet}>
+            <input type="hidden" name="fixture_id" value={fixtureId} />
+            <button type="submit" className="text-sm text-loss hover:underline">
+              Remove photo
+            </button>
+          </form>
         )}
-      </form>
+      </div>
       {hasSuggestions && (
         <p className="mt-2 text-xs text-ink/50">
           Player names below were guessed from the photo and may be wrong — check every row

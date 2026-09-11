@@ -242,20 +242,26 @@ export async function deleteFrame(formData: FormData) {
 
 // ── Scoresheets ─────────────────────────────────────────────────────────
 
-export async function uploadScoresheet(formData: FormData) {
-  const fixture_id = String(formData.get("fixture_id") ?? "");
-  const file = formData.get("photo");
-  if (!fixture_id || !(file instanceof File) || file.size === 0) return;
+/**
+ * Runs OCR on a photo already uploaded straight from the browser to
+ * Supabase Storage (see ScoresheetUploadForm) and stores the result. The
+ * photo itself never passes through this Server Action's request body —
+ * a phone photo easily exceeds the platform's ~4.5MB function body limit,
+ * which silently failed the upload when it went through here directly.
+ * Only the storage path (a short string) is passed in.
+ */
+export async function processScoresheet(fixture_id: string, path: string) {
+  if (!fixture_id || !path) throw new Error("Missing fixture or photo.");
 
   const supabase = await createClient();
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-  const path = `${fixture_id}/${Date.now()}.${ext}`;
 
-  const { error: uploadError } = await supabase.storage
+  const { data: fileData, error: downloadError } = await supabase.storage
     .from("scoresheets")
-    .upload(path, buffer, { contentType: file.type || "image/jpeg", upsert: true });
-  if (uploadError) return;
+    .download(path);
+  if (downloadError || !fileData) {
+    throw new Error(downloadError?.message ?? "Could not read the uploaded photo.");
+  }
+  const buffer = Buffer.from(await fileData.arrayBuffer());
 
   const {
     data: { publicUrl },
@@ -271,10 +277,11 @@ export async function uploadScoresheet(formData: FormData) {
     suggestions = null;
   }
 
-  await supabase
+  const { error: updateError } = await supabase
     .from("fixtures")
     .update({ scoresheet_url: publicUrl, scoresheet_suggestions: suggestions })
     .eq("id", fixture_id);
+  if (updateError) throw new Error(updateError.message);
 
   revalidatePath(`/admin/fixtures/${fixture_id}`);
 }
