@@ -1,6 +1,4 @@
 import { createWorker } from "tesseract.js";
-import { bestMatchWithScore } from "@/lib/fuzzyMatch";
-import type { Player } from "@/lib/types";
 
 type WordBox = { text: string; x0: number; y0: number; x1: number; y1: number };
 
@@ -46,29 +44,75 @@ function clusterIntoRows(words: WordBox[]): { y: number; text: string }[] {
     }));
 }
 
+const NON_NAME_WORDS = new Set([
+  "team",
+  "teams",
+  "player",
+  "players",
+  "score",
+  "scores",
+  "result",
+  "results",
+  "form",
+  "match",
+  "matches",
+  "date",
+  "venue",
+  "vs",
+  "frame",
+  "frames",
+  "home",
+  "away",
+  "singles",
+  "doubles",
+  "decider",
+  "captain",
+  "signed",
+  "signature",
+  "knockout",
+  "semi",
+  "final",
+  "league",
+  "division",
+  "week",
+  "season",
+]);
+
+/** A cheap "does this look like a handwritten person's name" filter — not
+ * roster-aware, since the whole point is to also surface names that aren't
+ * in the system yet. Rejects obvious form furniture (titles, dates, scores)
+ * without knowing anything about who's actually playing. */
+function looksLikeName(text: string): boolean {
+  const trimmed = text.trim();
+  if (trimmed.length < 3 || trimmed.length > 30) return false;
+  if (/\d/.test(trimmed)) return false;
+  if (!/^[A-Za-z][A-Za-z.'-]*(\s+[A-Za-z][A-Za-z.'-]*){0,3}$/.test(trimmed)) return false;
+
+  const words = trimmed.toLowerCase().split(/\s+/);
+  if (words.some((w) => NON_NAME_WORDS.has(w))) return false;
+
+  return true;
+}
+
 export type ScoresheetSuggestions = {
   home: (string | null)[];
   away: (string | null)[];
 };
 
 const FRAME_COUNT = 9;
-const MATCH_THRESHOLD = 0.55;
 
 /**
- * Best-effort, free-OCR name guesses for the 9 frame rows — never winners
- * or scores, since reading a handwritten tick/circle reliably needs real
- * vision understanding, not text OCR. Splits recognized words into a left
- * (home) and right (away) half by x-position, regroups them into rows, then
- * keeps only rows that closely match an actual roster name (filtering out
- * titles/dates/headers on the form), in top-to-bottom order.
+ * Best-effort, free-OCR name guesses for the 9 frame rows — raw recognized
+ * text, not matched to any roster, so a name that isn't in the system yet
+ * still comes through and can be added to the squad from the review screen.
+ * Winners/scores are never guessed here: reading a handwritten tick/circle
+ * reliably needs real vision understanding, not text OCR, so those stay
+ * manual. Splits recognized words into a left (home) and right (away) half
+ * by x-position, regroups them into rows, then keeps only rows that look
+ * like a plausible person's name (filtering out titles/dates/headers), in
+ * top-to-bottom order.
  */
-export async function extractScoresheetSuggestions(
-  buffer: Buffer,
-  homePlayers: Player[],
-  awayPlayers: Player[]
-): Promise<ScoresheetSuggestions | null> {
-  if (homePlayers.length === 0 && awayPlayers.length === 0) return null;
-
+export async function extractScoresheetNames(buffer: Buffer): Promise<ScoresheetSuggestions | null> {
   const words = await recognizeWords(buffer);
   if (words.length === 0) return null;
 
@@ -76,16 +120,14 @@ export async function extractScoresheetSuggestions(
   const leftRows = clusterIntoRows(words.filter((w) => (w.x0 + w.x1) / 2 < midX));
   const rightRows = clusterIntoRows(words.filter((w) => (w.x0 + w.x1) / 2 >= midX));
 
-  const matchedIds = (rows: { text: string }[], roster: Player[]) =>
-    rows
-      .map((row) => bestMatchWithScore(row.text, roster, (p) => p.name, MATCH_THRESHOLD)?.item.id ?? null)
-      .filter((id): id is string => id !== null);
+  const names = (rows: { text: string }[]) =>
+    rows.map((r) => r.text.trim()).filter(looksLikeName);
 
-  const homeIds = matchedIds(leftRows, homePlayers);
-  const awayIds = matchedIds(rightRows, awayPlayers);
+  const homeNames = names(leftRows);
+  const awayNames = names(rightRows);
 
   return {
-    home: Array.from({ length: FRAME_COUNT }, (_, i) => homeIds[i] ?? null),
-    away: Array.from({ length: FRAME_COUNT }, (_, i) => awayIds[i] ?? null),
+    home: Array.from({ length: FRAME_COUNT }, (_, i) => homeNames[i] ?? null),
+    away: Array.from({ length: FRAME_COUNT }, (_, i) => awayNames[i] ?? null),
   };
 }

@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getPlayersForTeam } from "@/lib/data";
-import { extractScoresheetSuggestions } from "@/lib/scoresheet";
+import { extractScoresheetNames } from "@/lib/scoresheet";
 
 function slugify(input: string) {
   return input
@@ -249,13 +248,6 @@ export async function uploadScoresheet(formData: FormData) {
   if (!fixture_id || !(file instanceof File) || file.size === 0) return;
 
   const supabase = await createClient();
-  const { data: fixture } = await supabase
-    .from("fixtures")
-    .select("home_team_id, away_team_id")
-    .eq("id", fixture_id)
-    .maybeSingle();
-  if (!fixture) return;
-
   const buffer = Buffer.from(await file.arrayBuffer());
   const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
   const path = `${fixture_id}/${Date.now()}.${ext}`;
@@ -269,14 +261,12 @@ export async function uploadScoresheet(formData: FormData) {
     data: { publicUrl },
   } = supabase.storage.from("scoresheets").getPublicUrl(path);
 
-  const [homePlayers, awayPlayers] = await Promise.all([
-    getPlayersForTeam(fixture.home_team_id),
-    getPlayersForTeam(fixture.away_team_id),
-  ]);
-
   let suggestions = null;
   try {
-    suggestions = await extractScoresheetSuggestions(buffer, homePlayers, awayPlayers);
+    // Raw recognized names, not matched to any roster — the review screen
+    // matches them against the live squad itself, so a name that isn't in
+    // the system yet still surfaces with a one-click "add to squad".
+    suggestions = await extractScoresheetNames(buffer);
   } catch {
     suggestions = null;
   }
@@ -298,4 +288,19 @@ export async function clearScoresheet(formData: FormData) {
     .update({ scoresheet_url: null, scoresheet_suggestions: null })
     .eq("id", fixture_id);
   revalidatePath(`/admin/fixtures/${fixture_id}`);
+}
+
+export async function addSuggestedPlayer(formData: FormData) {
+  const side = String(formData.get("new_player_side") ?? "") === "away" ? "away" : "home";
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  const team_id = String(formData.get(`${side}_team_id`) ?? "");
+  const name = String(formData.get(`${side}_suggested_name`) ?? "").trim();
+  if (!team_id || !name) return;
+
+  const supabase = await createClient();
+  await supabase.from("players").insert({ team_id, name, is_captain: false });
+  revalidatePath(`/admin/teams/${team_id}`);
+  revalidatePath("/teams");
+  revalidatePath("/stats");
+  if (fixture_id) revalidatePath(`/admin/fixtures/${fixture_id}`);
 }

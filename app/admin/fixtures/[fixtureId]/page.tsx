@@ -1,14 +1,26 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFramesForFixture, getPlayersForTeam } from "@/lib/data";
+import { bestMatchWithScore } from "@/lib/fuzzyMatch";
 import type { Fixture, Team } from "@/lib/types";
-import { clearScoresheet, deleteFrame, saveFrame, uploadScoresheet } from "../../actions";
+import { addSuggestedPlayer, clearScoresheet, deleteFrame, saveFrame, uploadScoresheet } from "../../actions";
 
 // OCR extraction can take longer than the default function timeout, and
 // this also covers the Server Actions invoked from this page.
 export const maxDuration = 60;
 
 type FixtureWithTeams = Fixture & { home_team: Team; away_team: Team };
+type PlayerOption = { id: string; name: string };
+
+/** Resolves one OCR-guessed name against a team's *current* roster (which
+ * may include a player just added via "Add to squad"). Unmatched names are
+ * still surfaced — the whole point is to help build out the roster, not
+ * just fill in players who are already there. */
+function resolveSuggestion(rawName: string | null, roster: PlayerOption[]) {
+  if (!rawName) return null;
+  const match = bestMatchWithScore(rawName, roster, (p) => p.name, 0.6);
+  return { name: rawName, matchedId: match?.item.id ?? null };
+}
 
 export default async function AdminFixtureFramesPage({
   params,
@@ -66,16 +78,22 @@ export default async function AdminFixtureFramesPage({
         <div className="space-y-4">
           {Array.from({ length: 9 }, (_, i) => i + 1).map((frameNumber) => {
             const existing = framesByNumber.get(frameNumber);
-            const suggestedHomeId = existing ? null : suggestions?.home?.[frameNumber - 1] ?? null;
-            const suggestedAwayId = existing ? null : suggestions?.away?.[frameNumber - 1] ?? null;
+            const homeSuggestion = existing
+              ? null
+              : resolveSuggestion(suggestions?.home?.[frameNumber - 1] ?? null, homePlayers);
+            const awaySuggestion = existing
+              ? null
+              : resolveSuggestion(suggestions?.away?.[frameNumber - 1] ?? null, awayPlayers);
             return (
               <FrameRow
                 key={frameNumber}
                 fixtureId={fixtureId}
                 frameNumber={frameNumber}
                 existing={existing}
-                suggestedHomeId={suggestedHomeId}
-                suggestedAwayId={suggestedAwayId}
+                homeSuggestion={homeSuggestion}
+                awaySuggestion={awaySuggestion}
+                homeTeamId={fixture.home_team_id}
+                awayTeamId={fixture.away_team_id}
                 homePlayers={homePlayers}
                 awayPlayers={awayPlayers}
               />
@@ -125,33 +143,39 @@ function ScoresheetPanel({
       {hasSuggestions && (
         <p className="mt-2 text-xs text-ink/50">
           Player names below were guessed from the photo and may be wrong — check every row
-          against the photo before saving. Winners and scores are never guessed; tick those
-          yourself.
+          against the photo before saving. A name not yet in a squad still shows up, with an
+          "Add to squad" button. Winners and scores are never guessed; tick those yourself.
         </p>
       )}
     </div>
   );
 }
 
+type Suggestion = { name: string; matchedId: string | null } | null;
+
 function FrameRow({
   fixtureId,
   frameNumber,
   existing,
-  suggestedHomeId,
-  suggestedAwayId,
+  homeSuggestion,
+  awaySuggestion,
+  homeTeamId,
+  awayTeamId,
   homePlayers,
   awayPlayers,
 }: {
   fixtureId: string;
   frameNumber: number;
   existing?: { id: string; frame_type: string; home_players: string[]; away_players: string[]; winner: string | null; break_win: boolean };
-  suggestedHomeId: string | null;
-  suggestedAwayId: string | null;
-  homePlayers: { id: string; name: string }[];
-  awayPlayers: { id: string; name: string }[];
+  homeSuggestion: Suggestion;
+  awaySuggestion: Suggestion;
+  homeTeamId: string;
+  awayTeamId: string;
+  homePlayers: PlayerOption[];
+  awayPlayers: PlayerOption[];
 }) {
   const defaultType = frameNumber === 9 ? "decider" : frameNumber === 4 || frameNumber === 8 ? "doubles" : "singles";
-  const suggested = !existing && (suggestedHomeId || suggestedAwayId);
+  const suggested = !existing && (homeSuggestion || awaySuggestion);
 
   return (
     <form
@@ -160,6 +184,14 @@ function FrameRow({
     >
       <input type="hidden" name="fixture_id" value={fixtureId} />
       <input type="hidden" name="frame_number" value={frameNumber} />
+      <input type="hidden" name="home_team_id" value={homeTeamId} />
+      <input type="hidden" name="away_team_id" value={awayTeamId} />
+      {homeSuggestion && !homeSuggestion.matchedId && (
+        <input type="hidden" name="home_suggested_name" value={homeSuggestion.name} />
+      )}
+      {awaySuggestion && !awaySuggestion.matchedId && (
+        <input type="hidden" name="away_suggested_name" value={awaySuggestion.name} />
+      )}
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <span className="font-semibold">
@@ -183,16 +215,50 @@ function FrameRow({
           <PlayerSelects
             namePrefix="home_player"
             players={homePlayers}
-            selected={existing?.home_players ?? (suggestedHomeId ? [suggestedHomeId] : [])}
+            selected={existing?.home_players ?? (homeSuggestion?.matchedId ? [homeSuggestion.matchedId] : [])}
           />
+          {homeSuggestion && !homeSuggestion.matchedId && (
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink/50">
+              <span>
+                Photo shows &quot;{homeSuggestion.name}&quot; — not in the squad yet.
+              </span>
+              <button
+                type="submit"
+                formAction={addSuggestedPlayer}
+                formNoValidate
+                name="new_player_side"
+                value="home"
+                className="font-medium text-felt hover:underline"
+              >
+                Add to squad
+              </button>
+            </p>
+          )}
         </div>
         <div>
           <p className="mb-1 text-xs font-medium uppercase text-ink/50">Away players</p>
           <PlayerSelects
             namePrefix="away_player"
             players={awayPlayers}
-            selected={existing?.away_players ?? (suggestedAwayId ? [suggestedAwayId] : [])}
+            selected={existing?.away_players ?? (awaySuggestion?.matchedId ? [awaySuggestion.matchedId] : [])}
           />
+          {awaySuggestion && !awaySuggestion.matchedId && (
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink/50">
+              <span>
+                Photo shows &quot;{awaySuggestion.name}&quot; — not in the squad yet.
+              </span>
+              <button
+                type="submit"
+                formAction={addSuggestedPlayer}
+                formNoValidate
+                name="new_player_side"
+                value="away"
+                className="font-medium text-felt hover:underline"
+              >
+                Add to squad
+              </button>
+            </p>
+          )}
         </div>
       </div>
 
@@ -225,6 +291,7 @@ function FrameRow({
         {existing && (
           <button
             formAction={deleteFrame}
+            formNoValidate
             name="id"
             value={existing.id}
             className="text-sm text-loss hover:underline"
@@ -243,7 +310,7 @@ function PlayerSelects({
   selected,
 }: {
   namePrefix: string;
-  players: { id: string; name: string }[];
+  players: PlayerOption[];
   selected: string[];
 }) {
   return (
