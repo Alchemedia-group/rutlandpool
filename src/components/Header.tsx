@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -20,9 +21,13 @@ export function Header({ seasonName }: { seasonName?: string }) {
     <header className="bg-felt-dark text-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gold font-display text-xs font-bold text-gold">
-            RCPL
-          </span>
+          <Image
+            src="/logo.png"
+            alt="Rutland County Pool League"
+            width={40}
+            height={40}
+            className="h-10 w-10 rounded-full"
+          />
           <Link href="/" className="font-display text-lg font-bold tracking-tight">
             Rutland County Pool League
           </Link>
