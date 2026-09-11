@@ -56,7 +56,7 @@ export function FixtureList({
                   : ""}
               </p>
             </div>
-            {fixture.status === "played" && (
+            {fixture.status === "played" ? (
               perspectiveTeamId ? (
                 <div className={`font-display text-sm font-bold ${won ? "text-win" : "text-loss"}`}>
                   {won ? "W" : "L"} {ownFrames}–{oppFrames}
@@ -66,6 +66,10 @@ export function FixtureList({
                   {fixture.home_frames} – {fixture.away_frames}
                 </div>
               )
+            ) : (
+              <div className="rounded border border-ink/15 px-3 py-1 font-display text-sm font-bold text-ink/30">
+                N/A – N/A
+              </div>
             )}
           </li>
         );

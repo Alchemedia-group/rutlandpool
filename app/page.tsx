@@ -7,7 +7,7 @@ import {
   getTeams,
 } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { FixtureList } from "@/components/FixtureList";
+import { WeekResultsList } from "@/components/WeekResultsList";
 
 function formatWeekDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -77,7 +77,7 @@ export default async function HomePage() {
 
       <div className="grid gap-8 md:grid-cols-[1fr_320px]">
         <div className="space-y-8">
-          <FixtureList fixtures={thisWeekFixtures} />
+          <WeekResultsList fixtures={thisWeekFixtures} />
 
           {latestNews && (
             <div className="rounded-lg border-l-4 border-gold bg-cream-card px-5 py-4">
@@ -139,9 +139,6 @@ export default async function HomePage() {
               </div>
             )}
             <p className="mt-2 text-xs text-ink/40">Updated live as captains submit.</p>
-            <Link href="/standings" className="mt-2 inline-block text-sm text-felt hover:underline">
-              Full standings →
-            </Link>
           </div>
         </div>
       </div>
