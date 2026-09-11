@@ -33,7 +33,7 @@ export default async function StatsPage({
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Player Stats</h1>
-      {season && <p className="mb-6 text-gray-500">{season.name}</p>}
+      {season && <p className="mb-6 text-ink/50">{season.name}</p>}
 
       <div className="mb-6 flex gap-2">
         {TABS.map((t) => (
@@ -41,7 +41,7 @@ export default async function StatsPage({
             key={t.key}
             href={`/stats?tab=${t.key}`}
             className={`rounded px-3 py-1.5 text-sm font-medium ${
-              activeTab === t.key ? "bg-felt text-white" : "border border-gray-300 text-gray-600"
+              activeTab === t.key ? "bg-felt text-white" : "border border-ink/15 text-ink/70"
             }`}
           >
             {t.label}
@@ -61,7 +61,7 @@ export default async function StatsPage({
         <BreaksTable rows={computeBreakWins(frames)} playersById={playersById} teamNameFor={teamNameFor} />
       )}
 
-      <p className="mt-4 text-xs text-gray-400">
+      <p className="mt-4 text-xs text-ink/40">
         {activeTab === "breaks"
           ? "Frames won on the break, credited to every player on the winning side."
           : "Minimum 4 frames played to qualify."}
@@ -80,14 +80,14 @@ function RecordTable({
   teamNameFor: (playerId: string) => string;
 }) {
   if (rows.length === 0) {
-    return <p className="text-gray-500">No frames recorded yet.</p>;
+    return <p className="text-ink/50">No frames recorded yet.</p>;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[560px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-gray-300 text-left text-gray-500">
+          <tr className="border-b border-ink/15 text-left text-ink/50">
             <th className="py-2 pr-4">#</th>
             <th className="py-2 pr-4">Player</th>
             <th className="py-2 pr-4">Team</th>
@@ -99,12 +99,12 @@ function RecordTable({
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={row.player_id} className="border-b border-gray-100">
-              <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
+            <tr key={row.player_id} className="border-b border-ink/5">
+              <td className="py-2 pr-4 text-ink/50">{i + 1}</td>
               <td className="py-2 pr-4 font-medium">
                 {playersById.get(row.player_id)?.name ?? "Unknown"}
               </td>
-              <td className="py-2 pr-4 text-gray-500">{teamNameFor(row.player_id)}</td>
+              <td className="py-2 pr-4 text-ink/50">{teamNameFor(row.player_id)}</td>
               <td className="px-2 py-2 text-center">{row.played}</td>
               <td className="px-2 py-2 text-center">{row.won}</td>
               <td className="px-2 py-2 text-center">{row.lost}</td>
@@ -127,14 +127,14 @@ function BreaksTable({
   teamNameFor: (playerId: string) => string;
 }) {
   if (rows.length === 0) {
-    return <p className="text-gray-500">No break wins recorded yet.</p>;
+    return <p className="text-ink/50">No break wins recorded yet.</p>;
   }
 
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[420px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-gray-300 text-left text-gray-500">
+          <tr className="border-b border-ink/15 text-left text-ink/50">
             <th className="py-2 pr-4">#</th>
             <th className="py-2 pr-4">Player</th>
             <th className="py-2 pr-4">Team</th>
@@ -143,12 +143,12 @@ function BreaksTable({
         </thead>
         <tbody>
           {rows.map((row, i) => (
-            <tr key={row.player_id} className="border-b border-gray-100">
-              <td className="py-2 pr-4 text-gray-500">{i + 1}</td>
+            <tr key={row.player_id} className="border-b border-ink/5">
+              <td className="py-2 pr-4 text-ink/50">{i + 1}</td>
               <td className="py-2 pr-4 font-medium">
                 {playersById.get(row.player_id)?.name ?? "Unknown"}
               </td>
-              <td className="py-2 pr-4 text-gray-500">{teamNameFor(row.player_id)}</td>
+              <td className="py-2 pr-4 text-ink/50">{teamNameFor(row.player_id)}</td>
               <td className="py-2 pl-2 text-right font-semibold">{row.breakWins}</td>
             </tr>
           ))}

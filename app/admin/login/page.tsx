@@ -11,7 +11,7 @@ export default async function LoginPage({
     <div className="mx-auto max-w-sm">
       <h1 className="mb-6 text-xl font-bold">Committee login</h1>
       {error && (
-        <p className="mb-4 rounded bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="mb-4 rounded bg-loss/10 px-3 py-2 text-sm text-loss">
           {error}
         </p>
       )}
@@ -26,7 +26,7 @@ export default async function LoginPage({
             name="email"
             type="email"
             required
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
           />
         </div>
         <div>
@@ -38,7 +38,7 @@ export default async function LoginPage({
             name="password"
             type="password"
             required
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
           />
         </div>
         <button

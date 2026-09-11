@@ -31,9 +31,9 @@ export default async function AdminDashboard() {
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded border border-gray-200 p-4">
+    <div className="rounded border border-ink/10 p-4">
       <p className="text-2xl font-bold">{value}</p>
-      <p className="text-sm text-gray-500">{label}</p>
+      <p className="text-sm text-ink/50">{label}</p>
     </div>
   );
 }

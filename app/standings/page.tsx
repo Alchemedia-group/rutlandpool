@@ -13,10 +13,15 @@ export default async function StandingsPage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-bold">Standings</h1>
-      {season && <p className="mb-6 text-gray-500">{season.name}</p>}
+      <h1 className="mb-1 flex items-center gap-2 text-2xl font-bold">
+        Division One
+        <span className="flex items-center gap-1 text-sm font-sans font-normal text-felt">
+          <span className="h-1.5 w-1.5 rounded-full bg-felt" /> Live
+        </span>
+      </h1>
+      {season && <p className="mb-6 text-ink/50">{season.name}</p>}
       <StandingsTable rows={rows} teamsById={teamsById} />
-      <p className="mt-4 text-xs text-gray-400">
+      <p className="mt-4 text-xs text-ink/40">
         2 points per frame won, 1 per frame lost, 5 for the match. Ties broken by frame difference, then frames for.
       </p>
     </div>

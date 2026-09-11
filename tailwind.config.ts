@@ -9,12 +9,23 @@ const config: Config = {
     extend: {
       colors: {
         felt: {
-          DEFAULT: "#0b5d3b",
-          dark: "#083f28",
+          DEFAULT: "#1B6B4A",
+          dark: "#123D2A",
         },
         gold: {
-          DEFAULT: "#c9a227",
+          DEFAULT: "#B08432",
         },
+        cream: {
+          DEFAULT: "#EFE9DC",
+          card: "#F6F2E9",
+        },
+        ink: "#1B1815",
+        win: "#1B6B4A",
+        loss: "#8F3B2E",
+      },
+      fontFamily: {
+        display: ["var(--font-display)"],
+        sans: ["var(--font-body)"],
       },
     },
   },

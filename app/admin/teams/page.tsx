@@ -15,14 +15,14 @@ export default async function AdminTeamsPage() {
           <input
             name="name"
             required
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
           />
         </div>
         <div>
           <label className="block text-sm font-medium">Venue (optional)</label>
           <input
             name="venue"
-            className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
           />
         </div>
         <button type="submit" className="rounded bg-felt px-4 py-2 text-white">
@@ -30,12 +30,12 @@ export default async function AdminTeamsPage() {
         </button>
       </form>
 
-      <ul className="divide-y divide-gray-200">
+      <ul className="divide-y divide-ink/10">
         {teams.map((team) => (
           <li key={team.id} className="flex items-center justify-between py-3">
             <div>
               <p className="font-medium">{team.name}</p>
-              {team.venue && <p className="text-sm text-gray-500">{team.venue}</p>}
+              {team.venue && <p className="text-sm text-ink/50">{team.venue}</p>}
             </div>
             <div className="flex items-center gap-4">
               <Link href={`/admin/teams/${team.id}`} className="text-sm text-felt hover:underline">
@@ -43,7 +43,7 @@ export default async function AdminTeamsPage() {
               </Link>
               <form action={deleteTeam}>
                 <input type="hidden" name="id" value={team.id} />
-                <button type="submit" className="text-sm text-red-600 hover:underline">
+                <button type="submit" className="text-sm text-loss hover:underline">
                   Delete
                 </button>
               </form>

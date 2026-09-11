@@ -11,7 +11,7 @@ export default async function ResultsPage() {
   return (
     <div>
       <h1 className="mb-1 text-2xl font-bold">Results</h1>
-      {season && <p className="mb-6 text-gray-500">{season.name}</p>}
+      {season && <p className="mb-6 text-ink/50">{season.name}</p>}
       <FixtureList fixtures={played} />
     </div>
   );

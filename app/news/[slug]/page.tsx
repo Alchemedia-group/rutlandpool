@@ -13,14 +13,14 @@ export default async function NewsPostPage({
   return (
     <article>
       <h1 className="text-2xl font-bold">{post.title}</h1>
-      <p className="mt-1 text-sm text-gray-500">
+      <p className="mt-1 text-sm text-ink/50">
         {new Date(post.published_at).toLocaleDateString("en-GB", {
           day: "numeric",
           month: "long",
           year: "numeric",
         })}
       </p>
-      <div className="mt-6 max-w-none whitespace-pre-wrap leading-relaxed text-gray-800">
+      <div className="mt-6 max-w-none whitespace-pre-wrap leading-relaxed text-ink">
         {post.body}
       </div>
     </article>

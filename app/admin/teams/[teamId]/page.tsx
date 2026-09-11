@@ -23,7 +23,7 @@ export default async function AdminTeamSquadPage({
   return (
     <div>
       <h1 className="mb-1 text-xl font-bold">{team.name} — squad</h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink/50">
         Players added here become selectable when entering frame results for this team's fixtures.
       </p>
 
@@ -31,7 +31,7 @@ export default async function AdminTeamSquadPage({
         <input type="hidden" name="team_id" value={team.id} />
         <div>
           <label className="block text-sm font-medium">Player name</label>
-          <input name="name" required className="mt-1 w-full rounded border border-gray-300 px-3 py-2" />
+          <input name="name" required className="mt-1 w-full rounded border border-ink/15 px-3 py-2" />
         </div>
         <label className="flex items-center gap-2 pb-2 text-sm">
           <input type="checkbox" name="is_captain" />
@@ -42,17 +42,17 @@ export default async function AdminTeamSquadPage({
         </button>
       </form>
 
-      <ul className="divide-y divide-gray-200">
+      <ul className="divide-y divide-ink/10">
         {players.map((player) => (
           <li key={player.id} className="flex items-center justify-between py-3">
             <span>
               {player.name}
-              {player.is_captain && <span className="ml-2 text-xs text-gray-400">(c)</span>}
+              {player.is_captain && <span className="ml-2 text-xs text-ink/40">(c)</span>}
             </span>
             <form action={deletePlayer}>
               <input type="hidden" name="id" value={player.id} />
               <input type="hidden" name="team_id" value={team.id} />
-              <button type="submit" className="text-sm text-red-600 hover:underline">
+              <button type="submit" className="text-sm text-loss hover:underline">
                 Remove
               </button>
             </form>

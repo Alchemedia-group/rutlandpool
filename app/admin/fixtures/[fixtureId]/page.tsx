@@ -34,7 +34,7 @@ export default async function AdminFixtureFramesPage({
       <h1 className="mb-1 text-xl font-bold">
         {fixture.home_team.name} v {fixture.away_team.name}
       </h1>
-      <p className="mb-6 text-sm text-gray-500">
+      <p className="mb-6 text-sm text-ink/50">
         {new Date(fixture.scheduled_at).toLocaleString("en-GB")} — frame-by-frame results
       </p>
 
@@ -78,7 +78,7 @@ function FrameRow({
   return (
     <form
       action={saveFrame}
-      className="rounded border border-gray-200 p-4"
+      className="rounded border border-ink/10 p-4"
     >
       <input type="hidden" name="fixture_id" value={fixtureId} />
       <input type="hidden" name="frame_number" value={frameNumber} />
@@ -88,7 +88,7 @@ function FrameRow({
         <select
           name="frame_type"
           defaultValue={existing?.frame_type ?? defaultType}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-ink/15 px-2 py-1 text-sm"
         >
           <option value="singles">Singles</option>
           <option value="doubles">Doubles</option>
@@ -98,7 +98,7 @@ function FrameRow({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <p className="mb-1 text-xs font-medium uppercase text-gray-500">Home players</p>
+          <p className="mb-1 text-xs font-medium uppercase text-ink/50">Home players</p>
           <PlayerSelects
             namePrefix="home_player"
             players={homePlayers}
@@ -106,7 +106,7 @@ function FrameRow({
           />
         </div>
         <div>
-          <p className="mb-1 text-xs font-medium uppercase text-gray-500">Away players</p>
+          <p className="mb-1 text-xs font-medium uppercase text-ink/50">Away players</p>
           <PlayerSelects
             namePrefix="away_player"
             players={awayPlayers}
@@ -146,7 +146,7 @@ function FrameRow({
             formAction={deleteFrame}
             name="id"
             value={existing.id}
-            className="text-sm text-red-600 hover:underline"
+            className="text-sm text-loss hover:underline"
           >
             Clear
           </button>
@@ -172,7 +172,7 @@ function PlayerSelects({
           key={slot}
           name={`${namePrefix}_${slot + 1}`}
           defaultValue={selected[slot] ?? ""}
-          className="rounded border border-gray-300 px-2 py-1 text-sm"
+          className="rounded border border-ink/15 px-2 py-1 text-sm"
         >
           <option value="">{slot === 0 ? "— select —" : "(doubles partner)"}</option>
           {players.map((p) => (

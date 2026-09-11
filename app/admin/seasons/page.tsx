@@ -19,14 +19,14 @@ export default async function AdminSeasonsPage() {
           name="name"
           placeholder="e.g. 2026/27"
           required
-          className="rounded border border-gray-300 px-3 py-2"
+          className="rounded border border-ink/15 px-3 py-2"
         />
         <button type="submit" className="rounded bg-felt px-4 py-2 text-white">
           Add season
         </button>
       </form>
 
-      <ul className="divide-y divide-gray-200">
+      <ul className="divide-y divide-ink/10">
         {seasons.map((season) => (
           <li key={season.id} className="flex items-center justify-between py-3">
             <span>
