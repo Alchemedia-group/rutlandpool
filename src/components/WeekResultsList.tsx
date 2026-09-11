@@ -13,9 +13,9 @@ export function WeekResultsList({ fixtures }: { fixtures: FixtureWithTeams[] }) 
   }
 
   return (
-    <ul className="divide-y divide-ink/10 rounded-lg border border-ink/10 bg-cream-card">
+    <ul className="divide-y divide-ink/10">
       {fixtures.map((fixture) => (
-        <li key={fixture.id} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 px-4 py-4">
+        <li key={fixture.id} className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 py-4">
           <Link href={`/teams/${fixture.home_team.slug}`} className="font-semibold hover:underline">
             {fixture.home_team.name}
           </Link>

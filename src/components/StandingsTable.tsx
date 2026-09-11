@@ -14,10 +14,10 @@ export function StandingsTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-ink/10 bg-cream-card">
+    <div className="overflow-x-auto rounded-lg border border-ink/10">
       <table className="w-full min-w-[640px] border-collapse text-sm">
         <thead>
-          <tr className="border-b border-ink/15 bg-cream text-left text-ink/50">
+          <tr className="border-b border-ink/15 bg-cream-card text-left text-ink/50">
             <th className="py-2 pl-4 pr-4">#</th>
             <th className="py-2 pr-4 font-display uppercase tracking-wide">Team</th>
             <th className="px-2 py-2 text-center">P</th>

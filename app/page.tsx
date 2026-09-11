@@ -121,17 +121,30 @@ export default async function HomePage() {
             {standings.length === 0 ? (
               <p className="text-ink/50">No standings yet.</p>
             ) : (
-              <div className="rounded-lg border border-ink/10 bg-cream-card">
+              <div className="overflow-hidden rounded-lg border border-ink/10">
+                <div className="flex items-center justify-between bg-cream-card px-4 py-2 text-xs uppercase tracking-wide text-ink/50">
+                  <span className="flex gap-3">
+                    <span className="w-4 text-right">#</span>
+                    <span>Team</span>
+                  </span>
+                  <span className="flex gap-4">
+                    <span>P</span>
+                    <span>Pts</span>
+                  </span>
+                </div>
                 <ol className="divide-y divide-ink/5">
                   {standings.map((row, i) => {
                     const team = teamsById.get(row.team_id);
                     return (
                       <li key={row.team_id} className="flex items-center justify-between px-4 py-2 text-sm">
-                        <span>
-                          <span className="mr-2 text-ink/40">{i + 1}</span>
+                        <span className="flex gap-3">
+                          <span className="w-4 text-right text-ink/40">{i + 1}</span>
                           {team?.name ?? "Unknown"}
                         </span>
-                        <span className="font-display font-bold">{row.points}</span>
+                        <span className="flex gap-4">
+                          <span className="text-ink/60">{row.played}</span>
+                          <span className="font-display font-bold">{row.points}</span>
+                        </span>
                       </li>
                     );
                   })}

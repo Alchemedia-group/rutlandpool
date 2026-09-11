@@ -16,8 +16,8 @@ const config: Config = {
           DEFAULT: "#B08432",
         },
         cream: {
-          DEFAULT: "#EFE9DC",
-          card: "#F6F2E9",
+          DEFAULT: "#FFFDF8",
+          card: "#F0EADB",
         },
         ink: "#1B1815",
         win: "#1B6B4A",

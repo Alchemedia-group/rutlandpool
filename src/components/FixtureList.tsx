@@ -27,7 +27,7 @@ export function FixtureList({
   }
 
   return (
-    <ul className="divide-y divide-ink/10 rounded-lg border border-ink/10 bg-cream-card">
+    <ul className="divide-y divide-ink/10">
       {fixtures.map((fixture) => {
         const isHome = fixture.home_team_id === perspectiveTeamId;
         const ownFrames = isHome ? fixture.home_frames : fixture.away_frames;
@@ -37,7 +37,7 @@ export function FixtureList({
           : null;
 
         return (
-          <li key={fixture.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-4">
+          <li key={fixture.id} className="flex flex-wrap items-center justify-between gap-2 py-4">
             <div>
               <p className="font-medium">
                 <Link href={`/teams/${fixture.home_team.slug}`} className="hover:underline">
