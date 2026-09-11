@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getPlayersForTeam } from "@/lib/data";
+import { extractScoresheetSuggestions } from "@/lib/scoresheet";
 
 function slugify(input: string) {
   return input
@@ -237,4 +239,63 @@ export async function deleteFrame(formData: FormData) {
   revalidatePath(`/admin/fixtures/${fixture_id}`);
   revalidatePath("/stats");
   revalidatePath("/teams");
+}
+
+// ── Scoresheets ─────────────────────────────────────────────────────────
+
+export async function uploadScoresheet(formData: FormData) {
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  const file = formData.get("photo");
+  if (!fixture_id || !(file instanceof File) || file.size === 0) return;
+
+  const supabase = await createClient();
+  const { data: fixture } = await supabase
+    .from("fixtures")
+    .select("home_team_id, away_team_id")
+    .eq("id", fixture_id)
+    .maybeSingle();
+  if (!fixture) return;
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+  const path = `${fixture_id}/${Date.now()}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("scoresheets")
+    .upload(path, buffer, { contentType: file.type || "image/jpeg", upsert: true });
+  if (uploadError) return;
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from("scoresheets").getPublicUrl(path);
+
+  const [homePlayers, awayPlayers] = await Promise.all([
+    getPlayersForTeam(fixture.home_team_id),
+    getPlayersForTeam(fixture.away_team_id),
+  ]);
+
+  let suggestions = null;
+  try {
+    suggestions = await extractScoresheetSuggestions(buffer, homePlayers, awayPlayers);
+  } catch {
+    suggestions = null;
+  }
+
+  await supabase
+    .from("fixtures")
+    .update({ scoresheet_url: publicUrl, scoresheet_suggestions: suggestions })
+    .eq("id", fixture_id);
+
+  revalidatePath(`/admin/fixtures/${fixture_id}`);
+}
+
+export async function clearScoresheet(formData: FormData) {
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  if (!fixture_id) return;
+  const supabase = await createClient();
+  await supabase
+    .from("fixtures")
+    .update({ scoresheet_url: null, scoresheet_suggestions: null })
+    .eq("id", fixture_id);
+  revalidatePath(`/admin/fixtures/${fixture_id}`);
 }

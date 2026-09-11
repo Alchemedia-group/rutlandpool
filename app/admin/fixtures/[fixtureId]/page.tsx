@@ -2,7 +2,11 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFramesForFixture, getPlayersForTeam } from "@/lib/data";
 import type { Fixture, Team } from "@/lib/types";
-import { deleteFrame, saveFrame } from "../../actions";
+import { clearScoresheet, deleteFrame, saveFrame, uploadScoresheet } from "../../actions";
+
+// OCR extraction can take longer than the default function timeout, and
+// this also covers the Server Actions invoked from this page.
+export const maxDuration = 60;
 
 type FixtureWithTeams = Fixture & { home_team: Team; away_team: Team };
 
@@ -26,6 +30,7 @@ export default async function AdminFixtureFramesPage({
     getFramesForFixture(fixtureId),
   ]);
   const framesByNumber = new Map(frames.map((f) => [f.frame_number, f]));
+  const suggestions = fixture.scoresheet_suggestions;
 
   const missingPlayers = homePlayers.length === 0 || awayPlayers.length === 0;
 
@@ -44,18 +49,86 @@ export default async function AdminFixtureFramesPage({
         </p>
       )}
 
-      <div className="space-y-4">
-        {Array.from({ length: 9 }, (_, i) => i + 1).map((frameNumber) => (
-          <FrameRow
-            key={frameNumber}
-            fixtureId={fixtureId}
-            frameNumber={frameNumber}
-            existing={framesByNumber.get(frameNumber)}
-            homePlayers={homePlayers}
-            awayPlayers={awayPlayers}
-          />
-        ))}
+      <ScoresheetPanel fixtureId={fixtureId} scoresheetUrl={fixture.scoresheet_url} hasSuggestions={!!suggestions} />
+
+      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
+        {fixture.scoresheet_url && (
+          <div className="lg:sticky lg:top-4 lg:self-start">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={fixture.scoresheet_url}
+              alt="Uploaded scoresheet"
+              className="w-full rounded border border-ink/10"
+            />
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {Array.from({ length: 9 }, (_, i) => i + 1).map((frameNumber) => {
+            const existing = framesByNumber.get(frameNumber);
+            const suggestedHomeId = existing ? null : suggestions?.home?.[frameNumber - 1] ?? null;
+            const suggestedAwayId = existing ? null : suggestions?.away?.[frameNumber - 1] ?? null;
+            return (
+              <FrameRow
+                key={frameNumber}
+                fixtureId={fixtureId}
+                frameNumber={frameNumber}
+                existing={existing}
+                suggestedHomeId={suggestedHomeId}
+                suggestedAwayId={suggestedAwayId}
+                homePlayers={homePlayers}
+                awayPlayers={awayPlayers}
+              />
+            );
+          })}
+        </div>
       </div>
+    </div>
+  );
+}
+
+function ScoresheetPanel({
+  fixtureId,
+  scoresheetUrl,
+  hasSuggestions,
+}: {
+  fixtureId: string;
+  scoresheetUrl: string | null;
+  hasSuggestions: boolean;
+}) {
+  return (
+    <div className="mb-6 rounded border border-ink/10 bg-cream-card p-4">
+      <p className="mb-2 text-sm font-semibold">Scoresheet photo</p>
+      <form action={uploadScoresheet} className="flex flex-wrap items-center gap-3">
+        <input type="hidden" name="fixture_id" value={fixtureId} />
+        <input
+          type="file"
+          name="photo"
+          accept="image/*"
+          capture="environment"
+          required
+          className="text-sm"
+        />
+        <button type="submit" className="rounded bg-felt-dark px-3 py-1.5 text-sm text-white">
+          Upload &amp; scan
+        </button>
+        {scoresheetUrl && (
+          <button
+            formAction={clearScoresheet}
+            formNoValidate
+            className="text-sm text-loss hover:underline"
+          >
+            Remove photo
+          </button>
+        )}
+      </form>
+      {hasSuggestions && (
+        <p className="mt-2 text-xs text-ink/50">
+          Player names below were guessed from the photo and may be wrong — check every row
+          against the photo before saving. Winners and scores are never guessed; tick those
+          yourself.
+        </p>
+      )}
     </div>
   );
 }
@@ -64,27 +137,35 @@ function FrameRow({
   fixtureId,
   frameNumber,
   existing,
+  suggestedHomeId,
+  suggestedAwayId,
   homePlayers,
   awayPlayers,
 }: {
   fixtureId: string;
   frameNumber: number;
   existing?: { id: string; frame_type: string; home_players: string[]; away_players: string[]; winner: string | null; break_win: boolean };
+  suggestedHomeId: string | null;
+  suggestedAwayId: string | null;
   homePlayers: { id: string; name: string }[];
   awayPlayers: { id: string; name: string }[];
 }) {
   const defaultType = frameNumber === 9 ? "decider" : frameNumber === 4 || frameNumber === 8 ? "doubles" : "singles";
+  const suggested = !existing && (suggestedHomeId || suggestedAwayId);
 
   return (
     <form
       action={saveFrame}
-      className="rounded border border-ink/10 p-4"
+      className={`rounded border p-4 ${suggested ? "border-gold/50 bg-gold/5" : "border-ink/10"}`}
     >
       <input type="hidden" name="fixture_id" value={fixtureId} />
       <input type="hidden" name="frame_number" value={frameNumber} />
 
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-semibold">Frame {frameNumber}</span>
+        <span className="font-semibold">
+          Frame {frameNumber}
+          {suggested && <span className="ml-2 text-xs font-normal text-gold">suggested from photo</span>}
+        </span>
         <select
           name="frame_type"
           defaultValue={existing?.frame_type ?? defaultType}
@@ -102,7 +183,7 @@ function FrameRow({
           <PlayerSelects
             namePrefix="home_player"
             players={homePlayers}
-            selected={existing?.home_players ?? []}
+            selected={existing?.home_players ?? (suggestedHomeId ? [suggestedHomeId] : [])}
           />
         </div>
         <div>
@@ -110,7 +191,7 @@ function FrameRow({
           <PlayerSelects
             namePrefix="away_player"
             players={awayPlayers}
-            selected={existing?.away_players ?? []}
+            selected={existing?.away_players ?? (suggestedAwayId ? [suggestedAwayId] : [])}
           />
         </div>
       </div>

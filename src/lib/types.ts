@@ -27,6 +27,8 @@ export type Fixture = {
   home_frames: number | null;
   away_frames: number | null;
   notes: string | null;
+  scoresheet_url: string | null;
+  scoresheet_suggestions: { home: (string | null)[]; away: (string | null)[] } | null;
   created_at: string;
 };
 
