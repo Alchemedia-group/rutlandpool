@@ -67,15 +67,6 @@ export default async function StandingsPage() {
             </ul>
           </div>
         )}
-
-        <div className="rounded-lg border border-dashed border-ink/15 bg-cream-card p-4">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink/50">
-            Download
-          </p>
-          <p className="text-sm text-ink/70">
-            Full 22-week fixture list as PDF or calendar subscription.
-          </p>
-        </div>
       </div>
     </div>
   );
