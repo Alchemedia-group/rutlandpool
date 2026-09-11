@@ -35,6 +35,28 @@ export type FixtureWithTeams = Fixture & {
   away_team: Team;
 };
 
+export type Player = {
+  id: string;
+  team_id: string;
+  name: string;
+  is_captain: boolean;
+  created_at: string;
+};
+
+export type FrameType = "singles" | "doubles" | "decider";
+
+export type Frame = {
+  id: string;
+  fixture_id: string;
+  frame_number: number;
+  frame_type: FrameType;
+  home_players: string[];
+  away_players: string[];
+  winner: "home" | "away" | null;
+  break_win: boolean;
+  created_at: string;
+};
+
 export type NewsPost = {
   id: string;
   title: string;

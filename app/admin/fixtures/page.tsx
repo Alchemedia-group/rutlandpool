@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getCurrentSeason, getFixtures, getTeams } from "@/lib/data";
 import {
   createFixture,
@@ -84,12 +85,17 @@ export default async function AdminFixturesPage() {
                   {fixture.venue ? ` · ${fixture.venue}` : ""} · {fixture.status}
                 </p>
               </div>
-              <form action={deleteFixture}>
-                <input type="hidden" name="id" value={fixture.id} />
-                <button type="submit" className="text-sm text-red-600 hover:underline">
-                  Delete
-                </button>
-              </form>
+              <div className="flex items-center gap-4">
+                <Link href={`/admin/fixtures/${fixture.id}`} className="text-sm text-felt hover:underline">
+                  Frames
+                </Link>
+                <form action={deleteFixture}>
+                  <input type="hidden" name="id" value={fixture.id} />
+                  <button type="submit" className="text-sm text-red-600 hover:underline">
+                    Delete
+                  </button>
+                </form>
+              </div>
             </div>
 
             <div className="mt-2 flex flex-wrap items-center gap-4">

@@ -6,6 +6,10 @@ export function Footer() {
           &copy; {new Date().getFullYear()} Rutland County Pool League.
         </p>
         <p className="mt-1">
+          <a href="/about" className="underline hover:text-gray-700">
+            About
+          </a>
+          {" · "}
           <a href="/contact" className="underline hover:text-gray-700">
             Contact
           </a>

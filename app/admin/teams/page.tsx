@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getTeams } from "@/lib/data";
 import { createTeam, deleteTeam } from "../actions";
 
@@ -36,12 +37,17 @@ export default async function AdminTeamsPage() {
               <p className="font-medium">{team.name}</p>
               {team.venue && <p className="text-sm text-gray-500">{team.venue}</p>}
             </div>
-            <form action={deleteTeam}>
-              <input type="hidden" name="id" value={team.id} />
-              <button type="submit" className="text-sm text-red-600 hover:underline">
-                Delete
-              </button>
-            </form>
+            <div className="flex items-center gap-4">
+              <Link href={`/admin/teams/${team.id}`} className="text-sm text-felt hover:underline">
+                Squad
+              </Link>
+              <form action={deleteTeam}>
+                <input type="hidden" name="id" value={team.id} />
+                <button type="submit" className="text-sm text-red-600 hover:underline">
+                  Delete
+                </button>
+              </form>
+            </div>
           </li>
         ))}
       </ul>

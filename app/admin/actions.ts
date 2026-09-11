@@ -112,7 +112,7 @@ export async function recordResult(formData: FormData) {
   revalidatePath("/admin/fixtures");
   revalidatePath("/fixtures");
   revalidatePath("/results");
-  revalidatePath("/table");
+  revalidatePath("/standings");
 }
 
 export async function setFixtureStatus(formData: FormData) {
@@ -128,7 +128,7 @@ export async function setFixtureStatus(formData: FormData) {
   revalidatePath("/admin/fixtures");
   revalidatePath("/fixtures");
   revalidatePath("/results");
-  revalidatePath("/table");
+  revalidatePath("/standings");
 }
 
 export async function deleteFixture(formData: FormData) {
@@ -139,7 +139,7 @@ export async function deleteFixture(formData: FormData) {
   revalidatePath("/admin/fixtures");
   revalidatePath("/fixtures");
   revalidatePath("/results");
-  revalidatePath("/table");
+  revalidatePath("/standings");
 }
 
 // ── News ────────────────────────────────────────────────────────────────
@@ -169,4 +169,72 @@ export async function deleteNewsPost(formData: FormData) {
   await supabase.from("news_posts").delete().eq("id", id);
   revalidatePath("/admin/news");
   revalidatePath("/news");
+}
+
+// ── Players ─────────────────────────────────────────────────────────────
+
+export async function createPlayer(formData: FormData) {
+  const team_id = String(formData.get("team_id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  const is_captain = formData.get("is_captain") === "on";
+  if (!team_id || !name) return;
+
+  const supabase = await createClient();
+  await supabase.from("players").insert({ team_id, name, is_captain });
+  revalidatePath(`/admin/teams/${team_id}`);
+  revalidatePath("/teams");
+  revalidatePath("/stats");
+}
+
+export async function deletePlayer(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const team_id = String(formData.get("team_id") ?? "");
+  if (!id) return;
+  const supabase = await createClient();
+  await supabase.from("players").delete().eq("id", id);
+  revalidatePath(`/admin/teams/${team_id}`);
+  revalidatePath("/teams");
+  revalidatePath("/stats");
+}
+
+// ── Frames ──────────────────────────────────────────────────────────────
+
+export async function saveFrame(formData: FormData) {
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  const frame_number = Number(formData.get("frame_number"));
+  const frame_type = String(formData.get("frame_type") ?? "");
+  const winner = String(formData.get("winner") ?? "") || null;
+  const break_win = formData.get("break_win") === "on";
+  const home_players = [formData.get("home_player_1"), formData.get("home_player_2")]
+    .map((v) => String(v ?? ""))
+    .filter(Boolean);
+  const away_players = [formData.get("away_player_1"), formData.get("away_player_2")]
+    .map((v) => String(v ?? ""))
+    .filter(Boolean);
+
+  if (!fixture_id || !frame_number || !frame_type || home_players.length === 0 || away_players.length === 0) {
+    return;
+  }
+
+  const supabase = await createClient();
+  await supabase
+    .from("frames")
+    .upsert(
+      { fixture_id, frame_number, frame_type, home_players, away_players, winner, break_win },
+      { onConflict: "fixture_id,frame_number" }
+    );
+  revalidatePath(`/admin/fixtures/${fixture_id}`);
+  revalidatePath("/stats");
+  revalidatePath("/teams");
+}
+
+export async function deleteFrame(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  if (!id) return;
+  const supabase = await createClient();
+  await supabase.from("frames").delete().eq("id", id);
+  revalidatePath(`/admin/fixtures/${fixture_id}`);
+  revalidatePath("/stats");
+  revalidatePath("/teams");
 }

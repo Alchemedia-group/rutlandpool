@@ -17,12 +17,14 @@ export type TeamRow = {
   points: number;
 };
 
-const POINTS_FOR_WIN = 2;
-const POINTS_FOR_DRAW = 1;
+const POINTS_PER_FRAME_WON = 2;
+const POINTS_PER_FRAME_LOST = 1;
+const MATCH_WIN_BONUS = 5;
 
 /**
- * Standard UK pub-league scoring: 2 points for a match win, 1 each for a
- * draw (equal frames), 0 for a loss. Frame difference is the tiebreaker.
+ * RCPL 26/27 scoring: 2 points per frame won, 1 per frame lost, plus a
+ * 5-point bonus to whichever side won more frames (split 2.5/2.5 on an
+ * equal-frames draw).
  */
 export function computeStandings(
   teamIds: string[],
@@ -57,26 +59,32 @@ export function computeStandings(
     const away = rows.get(fixture.away_team_id);
     if (!home || !away) continue;
 
+    const hf = fixture.home_frames;
+    const af = fixture.away_frames;
+
     home.played += 1;
     away.played += 1;
-    home.framesFor += fixture.home_frames;
-    home.framesAgainst += fixture.away_frames;
-    away.framesFor += fixture.away_frames;
-    away.framesAgainst += fixture.home_frames;
+    home.framesFor += hf;
+    home.framesAgainst += af;
+    away.framesFor += af;
+    away.framesAgainst += hf;
 
-    if (fixture.home_frames > fixture.away_frames) {
+    home.points += hf * POINTS_PER_FRAME_WON + af * POINTS_PER_FRAME_LOST;
+    away.points += af * POINTS_PER_FRAME_WON + hf * POINTS_PER_FRAME_LOST;
+
+    if (hf > af) {
       home.won += 1;
-      home.points += POINTS_FOR_WIN;
       away.lost += 1;
-    } else if (fixture.home_frames < fixture.away_frames) {
+      home.points += MATCH_WIN_BONUS;
+    } else if (af > hf) {
       away.won += 1;
-      away.points += POINTS_FOR_WIN;
       home.lost += 1;
+      away.points += MATCH_WIN_BONUS;
     } else {
       home.drawn += 1;
       away.drawn += 1;
-      home.points += POINTS_FOR_DRAW;
-      away.points += POINTS_FOR_DRAW;
+      home.points += MATCH_WIN_BONUS / 2;
+      away.points += MATCH_WIN_BONUS / 2;
     }
   }
 

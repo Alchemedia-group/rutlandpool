@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Fixture, FixtureWithTeams, NewsPost, Season, Team } from "@/lib/types";
+import type { Fixture, FixtureWithTeams, Frame, NewsPost, Player, Season, Team } from "@/lib/types";
 
 export async function getCurrentSeason(): Promise<Season | null> {
   const supabase = await createClient();
@@ -53,6 +53,42 @@ export async function getRawFixtures(seasonId?: string): Promise<Fixture[]> {
   let query = supabase.from("fixtures").select("*");
   if (seasonId) query = query.eq("season_id", seasonId);
   const { data } = await query;
+  return data ?? [];
+}
+
+export async function getPlayersForTeam(teamId: string): Promise<Player[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("players")
+    .select("*")
+    .eq("team_id", teamId)
+    .order("name");
+  return data ?? [];
+}
+
+export async function getAllPlayers(): Promise<Player[]> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("players").select("*").order("name");
+  return data ?? [];
+}
+
+/** All frames played within a season, via a join through fixtures. */
+export async function getFramesForSeason(seasonId: string): Promise<Frame[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("frames")
+    .select("*, fixture:fixture_id!inner(season_id)")
+    .eq("fixture.season_id", seasonId);
+  return (data as unknown as Frame[]) ?? [];
+}
+
+export async function getFramesForFixture(fixtureId: string): Promise<Frame[]> {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("frames")
+    .select("*")
+    .eq("fixture_id", fixtureId)
+    .order("frame_number");
   return data ?? [];
 }
 
