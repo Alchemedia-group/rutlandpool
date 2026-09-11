@@ -1,27 +1,11 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFramesForFixture, getPlayersForTeam } from "@/lib/data";
-import { bestMatchWithScore } from "@/lib/fuzzyMatch";
-import { ScoresheetUploadForm } from "@/components/ScoresheetUploadForm";
 import type { Fixture, Team } from "@/lib/types";
-import { addSuggestedPlayer, clearScoresheet, deleteFrame, saveFrame } from "../../actions";
-
-// OCR extraction can take longer than the default function timeout, and
-// this also covers the Server Actions invoked from this page.
-export const maxDuration = 60;
+import { saveMatch } from "../../actions";
 
 type FixtureWithTeams = Fixture & { home_team: Team; away_team: Team };
 type PlayerOption = { id: string; name: string };
-
-/** Resolves one OCR-guessed name against a team's *current* roster (which
- * may include a player just added via "Add to squad"). Unmatched names are
- * still surfaced — the whole point is to help build out the roster, not
- * just fill in players who are already there. */
-function resolveSuggestion(rawName: string | null, roster: PlayerOption[]) {
-  if (!rawName) return null;
-  const match = bestMatchWithScore(rawName, roster, (p) => p.name, 0.6);
-  return { name: rawName, matchedId: match?.item.id ?? null };
-}
 
 export default async function AdminFixtureFramesPage({
   params,
@@ -43,9 +27,7 @@ export default async function AdminFixtureFramesPage({
     getFramesForFixture(fixtureId),
   ]);
   const framesByNumber = new Map(frames.map((f) => [f.frame_number, f]));
-  const suggestions = fixture.scoresheet_suggestions;
-
-  const missingPlayers = homePlayers.length === 0 || awayPlayers.length === 0;
+  const playersById = new Map([...homePlayers, ...awayPlayers].map((p) => [p.id, p.name]));
 
   return (
     <div>
@@ -56,139 +38,70 @@ export default async function AdminFixtureFramesPage({
         {new Date(fixture.scheduled_at).toLocaleString("en-GB")} — frame-by-frame results
       </p>
 
-      {missingPlayers && (
-        <p className="mb-6 rounded bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
-          Add players to both squads (Admin → Teams → Squad) before entering frames.
-        </p>
-      )}
+      <p className="mb-6 rounded bg-cream-card px-4 py-3 text-sm text-ink/70">
+        Type a player's name for each frame — pick from the squad list as you type, or just type
+        someone new if they're standing in. Enter results for as many frames as you know and hit
+        Save; the match score and league table update from whichever frames have a winner ticked.
+      </p>
 
-      <ScoresheetPanel fixtureId={fixtureId} scoresheetUrl={fixture.scoresheet_url} hasSuggestions={!!suggestions} />
+      <datalist id={`players-${fixture.home_team_id}`}>
+        {homePlayers.map((p) => (
+          <option key={p.id} value={p.name} />
+        ))}
+      </datalist>
+      <datalist id={`players-${fixture.away_team_id}`}>
+        {awayPlayers.map((p) => (
+          <option key={p.id} value={p.name} />
+        ))}
+      </datalist>
 
-      <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
-        {fixture.scoresheet_url && (
-          <div className="lg:sticky lg:top-4 lg:self-start">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={fixture.scoresheet_url}
-              alt="Uploaded scoresheet"
-              className="w-full rounded border border-ink/10"
-            />
-          </div>
-        )}
+      <form action={saveMatch} className="space-y-4">
+        <input type="hidden" name="fixture_id" value={fixtureId} />
+        <input type="hidden" name="home_team_id" value={fixture.home_team_id} />
+        <input type="hidden" name="away_team_id" value={fixture.away_team_id} />
 
-        <div className="space-y-4">
-          {Array.from({ length: 9 }, (_, i) => i + 1).map((frameNumber) => {
-            const existing = framesByNumber.get(frameNumber);
-            const homeSuggestion = existing
-              ? null
-              : resolveSuggestion(suggestions?.home?.[frameNumber - 1] ?? null, homePlayers);
-            const awaySuggestion = existing
-              ? null
-              : resolveSuggestion(suggestions?.away?.[frameNumber - 1] ?? null, awayPlayers);
-            return (
-              <FrameRow
-                key={frameNumber}
-                fixtureId={fixtureId}
-                frameNumber={frameNumber}
-                existing={existing}
-                homeSuggestion={homeSuggestion}
-                awaySuggestion={awaySuggestion}
-                homeTeamId={fixture.home_team_id}
-                awayTeamId={fixture.away_team_id}
-                homePlayers={homePlayers}
-                awayPlayers={awayPlayers}
-              />
-            );
-          })}
-        </div>
-      </div>
+        {Array.from({ length: 9 }, (_, i) => i + 1).map((frameNumber) => (
+          <FrameRow
+            key={frameNumber}
+            frameNumber={frameNumber}
+            existing={framesByNumber.get(frameNumber)}
+            playersById={playersById}
+            homeDatalistId={`players-${fixture.home_team_id}`}
+            awayDatalistId={`players-${fixture.away_team_id}`}
+          />
+        ))}
+
+        <button type="submit" className="rounded bg-felt-dark px-4 py-2 text-sm font-semibold text-white">
+          Save match
+        </button>
+      </form>
     </div>
   );
 }
-
-function ScoresheetPanel({
-  fixtureId,
-  scoresheetUrl,
-  hasSuggestions,
-}: {
-  fixtureId: string;
-  scoresheetUrl: string | null;
-  hasSuggestions: boolean;
-}) {
-  return (
-    <div className="mb-6 rounded border border-ink/10 bg-cream-card p-4">
-      <p className="mb-2 text-sm font-semibold">Scoresheet photo</p>
-      <div className="flex flex-wrap items-center gap-3">
-        <ScoresheetUploadForm fixtureId={fixtureId} />
-        {scoresheetUrl && (
-          <form action={clearScoresheet}>
-            <input type="hidden" name="fixture_id" value={fixtureId} />
-            <button type="submit" className="text-sm text-loss hover:underline">
-              Remove photo
-            </button>
-          </form>
-        )}
-      </div>
-      {hasSuggestions && (
-        <p className="mt-2 text-xs text-ink/50">
-          Player names below were guessed from the photo and may be wrong — check every row
-          against the photo before saving. A name not yet in a squad still shows up, with an
-          "Add to squad" button. Winners and scores are never guessed; tick those yourself.
-        </p>
-      )}
-    </div>
-  );
-}
-
-type Suggestion = { name: string; matchedId: string | null } | null;
 
 function FrameRow({
-  fixtureId,
   frameNumber,
   existing,
-  homeSuggestion,
-  awaySuggestion,
-  homeTeamId,
-  awayTeamId,
-  homePlayers,
-  awayPlayers,
+  playersById,
+  homeDatalistId,
+  awayDatalistId,
 }: {
-  fixtureId: string;
   frameNumber: number;
-  existing?: { id: string; frame_type: string; home_players: string[]; away_players: string[]; winner: string | null; break_win: boolean };
-  homeSuggestion: Suggestion;
-  awaySuggestion: Suggestion;
-  homeTeamId: string;
-  awayTeamId: string;
-  homePlayers: PlayerOption[];
-  awayPlayers: PlayerOption[];
+  existing?: { frame_type: string; home_players: string[]; away_players: string[]; winner: string | null; break_win: boolean };
+  playersById: Map<string, string>;
+  homeDatalistId: string;
+  awayDatalistId: string;
 }) {
   const defaultType = frameNumber === 9 ? "decider" : frameNumber === 4 || frameNumber === 8 ? "doubles" : "singles";
-  const suggested = !existing && (homeSuggestion || awaySuggestion);
+  const homeNames = existing?.home_players.map((id) => playersById.get(id) ?? "") ?? [];
+  const awayNames = existing?.away_players.map((id) => playersById.get(id) ?? "") ?? [];
 
   return (
-    <form
-      action={saveFrame}
-      className={`rounded border p-4 ${suggested ? "border-gold/50 bg-gold/5" : "border-ink/10"}`}
-    >
-      <input type="hidden" name="fixture_id" value={fixtureId} />
-      <input type="hidden" name="frame_number" value={frameNumber} />
-      <input type="hidden" name="home_team_id" value={homeTeamId} />
-      <input type="hidden" name="away_team_id" value={awayTeamId} />
-      {homeSuggestion && !homeSuggestion.matchedId && (
-        <input type="hidden" name="home_suggested_name" value={homeSuggestion.name} />
-      )}
-      {awaySuggestion && !awaySuggestion.matchedId && (
-        <input type="hidden" name="away_suggested_name" value={awaySuggestion.name} />
-      )}
-
+    <div className="rounded border border-ink/10 p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-semibold">
-          Frame {frameNumber}
-          {suggested && <span className="ml-2 text-xs font-normal text-gold">suggested from photo</span>}
-        </span>
+        <span className="font-semibold">Frame {frameNumber}</span>
         <select
-          name="frame_type"
+          name={`frame_${frameNumber}_type`}
           defaultValue={existing?.frame_type ?? defaultType}
           className="rounded border border-ink/15 px-2 py-1 text-sm"
         >
@@ -201,53 +114,11 @@ function FrameRow({
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-1 text-xs font-medium uppercase text-ink/50">Home players</p>
-          <PlayerSelects
-            namePrefix="home_player"
-            players={homePlayers}
-            selected={existing?.home_players ?? (homeSuggestion?.matchedId ? [homeSuggestion.matchedId] : [])}
-          />
-          {homeSuggestion && !homeSuggestion.matchedId && (
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink/50">
-              <span>
-                Photo shows &quot;{homeSuggestion.name}&quot; — not in the squad yet.
-              </span>
-              <button
-                type="submit"
-                formAction={addSuggestedPlayer}
-                formNoValidate
-                name="new_player_side"
-                value="home"
-                className="font-medium text-felt hover:underline"
-              >
-                Add to squad
-              </button>
-            </p>
-          )}
+          <NameInputs namePrefix={`frame_${frameNumber}_home`} datalistId={homeDatalistId} values={homeNames} />
         </div>
         <div>
           <p className="mb-1 text-xs font-medium uppercase text-ink/50">Away players</p>
-          <PlayerSelects
-            namePrefix="away_player"
-            players={awayPlayers}
-            selected={existing?.away_players ?? (awaySuggestion?.matchedId ? [awaySuggestion.matchedId] : [])}
-          />
-          {awaySuggestion && !awaySuggestion.matchedId && (
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-ink/50">
-              <span>
-                Photo shows &quot;{awaySuggestion.name}&quot; — not in the squad yet.
-              </span>
-              <button
-                type="submit"
-                formAction={addSuggestedPlayer}
-                formNoValidate
-                name="new_player_side"
-                value="away"
-                className="font-medium text-felt hover:underline"
-              >
-                Add to squad
-              </button>
-            </p>
-          )}
+          <NameInputs namePrefix={`frame_${frameNumber}_away`} datalistId={awayDatalistId} values={awayNames} />
         </div>
       </div>
 
@@ -255,7 +126,7 @@ function FrameRow({
         <label className="flex items-center gap-1 text-sm">
           <input
             type="radio"
-            name="winner"
+            name={`frame_${frameNumber}_winner`}
             value="home"
             defaultChecked={existing?.winner === "home"}
           />
@@ -264,60 +135,47 @@ function FrameRow({
         <label className="flex items-center gap-1 text-sm">
           <input
             type="radio"
-            name="winner"
+            name={`frame_${frameNumber}_winner`}
             value="away"
             defaultChecked={existing?.winner === "away"}
           />
           Away won
         </label>
         <label className="flex items-center gap-1 text-sm">
-          <input type="checkbox" name="break_win" defaultChecked={existing?.break_win} />
+          <input
+            type="checkbox"
+            name={`frame_${frameNumber}_break_win`}
+            defaultChecked={existing?.break_win}
+          />
           Won on the break
         </label>
-        <button type="submit" className="rounded bg-felt-dark px-3 py-1 text-sm text-white">
-          Save
-        </button>
-        {existing && (
-          <button
-            formAction={deleteFrame}
-            formNoValidate
-            name="id"
-            value={existing.id}
-            className="text-sm text-loss hover:underline"
-          >
-            Clear
-          </button>
-        )}
       </div>
-    </form>
+    </div>
   );
 }
 
-function PlayerSelects({
+function NameInputs({
   namePrefix,
-  players,
-  selected,
+  datalistId,
+  values,
 }: {
   namePrefix: string;
-  players: PlayerOption[];
-  selected: string[];
+  datalistId: string;
+  values: string[];
 }) {
   return (
     <div className="flex flex-col gap-2 sm:flex-row">
       {[0, 1].map((slot) => (
-        <select
+        <input
           key={slot}
+          type="text"
           name={`${namePrefix}_${slot + 1}`}
-          defaultValue={selected[slot] ?? ""}
-          className="rounded border border-ink/15 px-2 py-1 text-sm"
-        >
-          <option value="">{slot === 0 ? "— select —" : "(doubles partner)"}</option>
-          {players.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
+          list={datalistId}
+          defaultValue={values[slot] ?? ""}
+          placeholder={slot === 0 ? "Player name" : "Doubles partner"}
+          className="w-full rounded border border-ink/15 px-2 py-1 text-sm"
+          autoComplete="off"
+        />
       ))}
     </div>
   );

@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { extractScoresheetNames } from "@/lib/scoresheet";
 
 function slugify(input: string) {
   return input
@@ -200,114 +199,106 @@ export async function deletePlayer(formData: FormData) {
 
 // ── Frames ──────────────────────────────────────────────────────────────
 
-export async function saveFrame(formData: FormData) {
-  const fixture_id = String(formData.get("fixture_id") ?? "");
-  const frame_number = Number(formData.get("frame_number"));
-  const frame_type = String(formData.get("frame_type") ?? "");
-  const winner = String(formData.get("winner") ?? "") || null;
-  const break_win = formData.get("break_win") === "on";
-  const home_players = [formData.get("home_player_1"), formData.get("home_player_2")]
-    .map((v) => String(v ?? ""))
-    .filter(Boolean);
-  const away_players = [formData.get("away_player_1"), formData.get("away_player_2")]
-    .map((v) => String(v ?? ""))
-    .filter(Boolean);
+const FRAME_COUNT = 9;
 
-  if (!fixture_id || !frame_number || !frame_type || home_players.length === 0 || away_players.length === 0) {
-    return;
-  }
+/** Finds a player by name on a team (case-insensitive), or creates one on
+ * the fly — covers a stand-in playing for someone who couldn't make it,
+ * without needing to be added to the squad ahead of time. `known` is
+ * mutated so a stand-in named in more than one frame this same submission
+ * resolves to the same player instead of being created twice. */
+async function resolvePlayerId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  team_id: string,
+  rawName: string,
+  known: { id: string; name: string }[]
+): Promise<string | null> {
+  const name = rawName.trim();
+  if (!name) return null;
 
-  const supabase = await createClient();
-  await supabase
-    .from("frames")
-    .upsert(
-      { fixture_id, frame_number, frame_type, home_players, away_players, winner, break_win },
-      { onConflict: "fixture_id,frame_number" }
-    );
-  revalidatePath(`/admin/fixtures/${fixture_id}`);
-  revalidatePath("/stats");
-  revalidatePath("/teams");
+  const existing = known.find((p) => p.name.toLowerCase() === name.toLowerCase());
+  if (existing) return existing.id;
+
+  const { data: created, error } = await supabase
+    .from("players")
+    .insert({ team_id, name, is_captain: false })
+    .select("id, name")
+    .single();
+  if (error || !created) return null;
+
+  known.push(created);
+  return created.id;
 }
-
-export async function deleteFrame(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  const fixture_id = String(formData.get("fixture_id") ?? "");
-  if (!id) return;
-  const supabase = await createClient();
-  await supabase.from("frames").delete().eq("id", id);
-  revalidatePath(`/admin/fixtures/${fixture_id}`);
-  revalidatePath("/stats");
-  revalidatePath("/teams");
-}
-
-// ── Scoresheets ─────────────────────────────────────────────────────────
 
 /**
- * Runs OCR on a photo already uploaded straight from the browser to
- * Supabase Storage (see ScoresheetUploadForm) and stores the result. The
- * photo itself never passes through this Server Action's request body —
- * a phone photo easily exceeds the platform's ~4.5MB function body limit,
- * which silently failed the upload when it went through here directly.
- * Only the storage path (a short string) is passed in.
+ * Saves every frame of a match in one go. Player fields are free text, not
+ * a fixed dropdown — a stand-in name that isn't already on the squad is
+ * added automatically rather than rejected, since it's normal for someone
+ * to fill in for a player who couldn't make it.
  */
-export async function processScoresheet(fixture_id: string, path: string) {
-  if (!fixture_id || !path) throw new Error("Missing fixture or photo.");
+export async function saveMatch(formData: FormData) {
+  const fixture_id = String(formData.get("fixture_id") ?? "");
+  const home_team_id = String(formData.get("home_team_id") ?? "");
+  const away_team_id = String(formData.get("away_team_id") ?? "");
+  if (!fixture_id || !home_team_id || !away_team_id) return;
 
   const supabase = await createClient();
+  const [{ data: homeKnown }, { data: awayKnown }] = await Promise.all([
+    supabase.from("players").select("id, name").eq("team_id", home_team_id),
+    supabase.from("players").select("id, name").eq("team_id", away_team_id),
+  ]);
+  const homePlayers = homeKnown ?? [];
+  const awayPlayers = awayKnown ?? [];
 
-  const { data: fileData, error: downloadError } = await supabase.storage
-    .from("scoresheets")
-    .download(path);
-  if (downloadError || !fileData) {
-    throw new Error(downloadError?.message ?? "Could not read the uploaded photo.");
+  let homeFramesWon = 0;
+  let awayFramesWon = 0;
+
+  for (let frameNumber = 1; frameNumber <= FRAME_COUNT; frameNumber++) {
+    const frame_type = String(formData.get(`frame_${frameNumber}_type`) ?? "");
+    const winner = String(formData.get(`frame_${frameNumber}_winner`) ?? "") || null;
+    const break_win = formData.get(`frame_${frameNumber}_break_win`) === "on";
+
+    const homeNames = [
+      formData.get(`frame_${frameNumber}_home_1`),
+      formData.get(`frame_${frameNumber}_home_2`),
+    ].map((v) => String(v ?? ""));
+    const awayNames = [
+      formData.get(`frame_${frameNumber}_away_1`),
+      formData.get(`frame_${frameNumber}_away_2`),
+    ].map((v) => String(v ?? ""));
+
+    const home_players = (
+      await Promise.all(homeNames.map((n) => resolvePlayerId(supabase, home_team_id, n, homePlayers)))
+    ).filter((id): id is string => id !== null);
+    const away_players = (
+      await Promise.all(awayNames.map((n) => resolvePlayerId(supabase, away_team_id, n, awayPlayers)))
+    ).filter((id): id is string => id !== null);
+
+    if (!frame_type || home_players.length === 0 || away_players.length === 0) continue;
+
+    await supabase
+      .from("frames")
+      .upsert(
+        { fixture_id, frame_number: frameNumber, frame_type, home_players, away_players, winner, break_win },
+        { onConflict: "fixture_id,frame_number" }
+      );
+
+    if (winner === "home") homeFramesWon++;
+    if (winner === "away") awayFramesWon++;
   }
-  const buffer = Buffer.from(await fileData.arrayBuffer());
 
-  const {
-    data: { publicUrl },
-  } = supabase.storage.from("scoresheets").getPublicUrl(path);
-
-  let suggestions = null;
-  try {
-    // Raw recognized names, not matched to any roster — the review screen
-    // matches them against the live squad itself, so a name that isn't in
-    // the system yet still surfaces with a one-click "add to squad".
-    suggestions = await extractScoresheetNames(buffer);
-  } catch {
-    suggestions = null;
+  if (homeFramesWon + awayFramesWon > 0) {
+    await supabase
+      .from("fixtures")
+      .update({ status: "played", home_frames: homeFramesWon, away_frames: awayFramesWon })
+      .eq("id", fixture_id);
   }
-
-  const { error: updateError } = await supabase
-    .from("fixtures")
-    .update({ scoresheet_url: publicUrl, scoresheet_suggestions: suggestions })
-    .eq("id", fixture_id);
-  if (updateError) throw new Error(updateError.message);
 
   revalidatePath(`/admin/fixtures/${fixture_id}`);
-}
-
-export async function clearScoresheet(formData: FormData) {
-  const fixture_id = String(formData.get("fixture_id") ?? "");
-  if (!fixture_id) return;
-  const supabase = await createClient();
-  await supabase
-    .from("fixtures")
-    .update({ scoresheet_url: null, scoresheet_suggestions: null })
-    .eq("id", fixture_id);
-  revalidatePath(`/admin/fixtures/${fixture_id}`);
-}
-
-export async function addSuggestedPlayer(formData: FormData) {
-  const side = String(formData.get("new_player_side") ?? "") === "away" ? "away" : "home";
-  const fixture_id = String(formData.get("fixture_id") ?? "");
-  const team_id = String(formData.get(`${side}_team_id`) ?? "");
-  const name = String(formData.get(`${side}_suggested_name`) ?? "").trim();
-  if (!team_id || !name) return;
-
-  const supabase = await createClient();
-  await supabase.from("players").insert({ team_id, name, is_captain: false });
-  revalidatePath(`/admin/teams/${team_id}`);
-  revalidatePath("/teams");
+  revalidatePath("/admin/fixtures");
+  revalidatePath("/admin/teams");
+  revalidatePath("/fixtures");
+  revalidatePath("/results");
+  revalidatePath("/standings");
   revalidatePath("/stats");
-  if (fixture_id) revalidatePath(`/admin/fixtures/${fixture_id}`);
+  revalidatePath("/teams");
 }
