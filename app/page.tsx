@@ -17,7 +17,12 @@ function formatWeekDate(iso: string) {
   });
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ week?: string }>;
+}) {
+  const { week } = await searchParams;
   const season = await getCurrentSeason();
   const fixtures = season ? await getFixtures(season.id) : [];
   const news = await getPublishedNews();
@@ -26,19 +31,21 @@ export default async function HomePage() {
 
   const now = Date.now();
 
+  // Plain YYYY-MM-DD (UTC) so it doubles as a stable, linkable ?week= value.
   const dateKeys = Array.from(
-    new Set(fixtures.map((f) => new Date(f.scheduled_at).toDateString()))
-  ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    new Set(fixtures.map((f) => new Date(f.scheduled_at).toISOString().slice(0, 10)))
+  ).sort();
 
-  const nextDateKey =
+  const upcomingDateKey =
     dateKeys.find((d) => new Date(d).getTime() >= now - 1000 * 60 * 60 * 24) ??
     dateKeys[dateKeys.length - 1];
-  const weekIndex = dateKeys.indexOf(nextDateKey);
+  const selectedDateKey = week && dateKeys.includes(week) ? week : upcomingDateKey;
+  const weekIndex = dateKeys.indexOf(selectedDateKey);
 
   const weekChips = dateKeys.slice(Math.max(0, weekIndex), Math.max(0, weekIndex) + 6);
 
   const thisWeekFixtures = fixtures.filter(
-    (f) => new Date(f.scheduled_at).toDateString() === nextDateKey
+    (f) => new Date(f.scheduled_at).toISOString().slice(0, 10) === selectedDateKey
   );
 
   const nextUp = fixtures
@@ -53,7 +60,7 @@ export default async function HomePage() {
     <div className="space-y-10">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">
-          Week {weekIndex + 1} — {nextDateKey ? formatWeekDate(nextDateKey) : "TBC"}
+          Week {weekIndex + 1} — {selectedDateKey ? formatWeekDate(selectedDateKey) : "TBC"}
         </h1>
         <span className="text-sm text-ink/50">All matches 8:00pm</span>
       </div>
@@ -61,16 +68,17 @@ export default async function HomePage() {
       {weekChips.length > 0 && (
         <div className="-mt-6 flex flex-wrap gap-2">
           {weekChips.map((d) => (
-            <span
+            <Link
               key={d}
-              className={`rounded border px-3 py-1 text-sm ${
-                d === nextDateKey
+              href={`/?week=${d}`}
+              className={`rounded border px-3 py-1 text-sm transition ${
+                d === selectedDateKey
                   ? "border-felt-dark bg-felt-dark text-white"
-                  : "border-ink/15 text-ink/60"
+                  : "border-ink/15 text-ink/60 hover:border-felt-dark hover:text-felt-dark"
               }`}
             >
               {formatWeekDate(d)}
-            </span>
+            </Link>
           ))}
         </div>
       )}
