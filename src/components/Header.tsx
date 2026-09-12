@@ -31,18 +31,19 @@ export function Header({ seasonName }: { seasonName?: string }) {
   return (
     <header className="bg-felt-dark text-white">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
-        <div className="flex min-w-0 items-center gap-3">
+        <Link href="/" className="flex min-w-0 items-center gap-3">
           <Image
             src="/logo.png"
             alt="Rutland County Pool League"
-            width={40}
-            height={40}
-            className="h-10 w-10 shrink-0 rounded-full"
+            width={48}
+            height={48}
+            className="h-12 w-12 shrink-0 rounded-full"
           />
-          <Link href="/" className="min-w-0 truncate font-display text-lg font-bold tracking-tight">
-            Rutland County Pool League
-          </Link>
-        </div>
+          <span className="min-w-0 truncate font-display text-lg font-bold tracking-tight">
+            <span className="hidden sm:inline">Rutland County Pool League</span>
+            <span className="sm:hidden">RCPL</span>
+          </span>
+        </Link>
 
         <div className="flex shrink-0 items-center gap-3">
           {seasonName && (
