@@ -30,23 +30,23 @@ export function Header({ seasonName }: { seasonName?: string }) {
 
   return (
     <header className="bg-felt-dark text-white">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
-        <div className="flex items-center gap-3">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
+        <div className="flex min-w-0 items-center gap-3">
           <Image
             src="/logo.png"
             alt="Rutland County Pool League"
             width={40}
             height={40}
-            className="h-10 w-10 rounded-full"
+            className="h-10 w-10 shrink-0 rounded-full"
           />
-          <Link href="/" className="font-display text-lg font-bold tracking-tight">
+          <Link href="/" className="min-w-0 truncate font-display text-lg font-bold tracking-tight">
             Rutland County Pool League
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center gap-3">
           {seasonName && (
-            <span className="rounded bg-gold px-3 py-1 font-display text-sm font-bold text-felt-dark">
+            <span className="whitespace-nowrap rounded bg-gold px-3 py-1 font-display text-sm font-bold text-felt-dark">
               {seasonName}
             </span>
           )}
@@ -55,7 +55,7 @@ export function Header({ seasonName }: { seasonName?: string }) {
             onClick={() => setOpen(true)}
             aria-label="Open menu"
             aria-expanded={open}
-            className="rounded p-1.5 text-white md:hidden"
+            className="flex items-center rounded p-1.5 text-white md:hidden"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <line x1="3" y1="6" x2="21" y2="6" strokeLinecap="round" />
