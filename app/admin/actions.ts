@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { FRAME_COUNT, frameTypeForNumber } from "@/lib/frames";
 
 function slugify(input: string) {
   return input
@@ -199,8 +200,6 @@ export async function deletePlayer(formData: FormData) {
 
 // ── Frames ──────────────────────────────────────────────────────────────
 
-const FRAME_COUNT = 9;
-
 /** Finds a player by name on a team (case-insensitive), or creates one on
  * the fly — covers a stand-in playing for someone who couldn't make it,
  * without needing to be added to the squad ahead of time. `known` is
@@ -242,20 +241,24 @@ export async function saveMatch(formData: FormData) {
   if (!fixture_id || !home_team_id || !away_team_id) return;
 
   const supabase = await createClient();
-  const [{ data: homeKnown }, { data: awayKnown }] = await Promise.all([
+  const [{ data: homeKnown }, { data: awayKnown }, { data: existingFrames }] = await Promise.all([
     supabase.from("players").select("id, name").eq("team_id", home_team_id),
     supabase.from("players").select("id, name").eq("team_id", away_team_id),
+    supabase.from("frames").select("frame_number, break_win").eq("fixture_id", fixture_id),
   ]);
   const homePlayers = homeKnown ?? [];
   const awayPlayers = awayKnown ?? [];
+  // The compact entry table dropped the break-win checkbox — carry each
+  // frame's previously recorded value forward instead of resetting it.
+  const breakWinByFrame = new Map((existingFrames ?? []).map((f) => [f.frame_number, f.break_win]));
 
   let homeFramesWon = 0;
   let awayFramesWon = 0;
 
   for (let frameNumber = 1; frameNumber <= FRAME_COUNT; frameNumber++) {
-    const frame_type = String(formData.get(`frame_${frameNumber}_type`) ?? "");
+    const frame_type = frameTypeForNumber(frameNumber);
     const winner = String(formData.get(`frame_${frameNumber}_winner`) ?? "") || null;
-    const break_win = formData.get(`frame_${frameNumber}_break_win`) === "on";
+    const break_win = breakWinByFrame.get(frameNumber) ?? false;
 
     const homeNames = [
       formData.get(`frame_${frameNumber}_home_1`),
@@ -273,7 +276,7 @@ export async function saveMatch(formData: FormData) {
       await Promise.all(awayNames.map((n) => resolvePlayerId(supabase, away_team_id, n, awayPlayers)))
     ).filter((id): id is string => id !== null);
 
-    if (!frame_type || home_players.length === 0 || away_players.length === 0) continue;
+    if (home_players.length === 0 || away_players.length === 0) continue;
 
     await supabase
       .from("frames")
