@@ -12,6 +12,7 @@ const links = [
   { href: "/stats", label: "Stats" },
   { href: "/venues", label: "Venues" },
   { href: "/rules", label: "Rules" },
+  { href: "/agm-2026", label: "AGM 2026" },
 ];
 
 export function Header({ seasonName }: { seasonName?: string }) {
