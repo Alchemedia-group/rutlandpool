@@ -276,3 +276,13 @@ export async function saveMatch(formData: FormData) {
   revalidatePath("/stats");
   revalidatePath("/teams");
 }
+
+// ── Contact messages ─────────────────────────────────────────────────────
+
+export async function deleteContactMessage(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const supabase = await createClient();
+  await supabase.from("contact_messages").delete().eq("id", id);
+  revalidatePath("/admin/contact");
+}

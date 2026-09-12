@@ -7,6 +7,7 @@ const links = [
   { href: "/admin/seasons", label: "Seasons" },
   { href: "/admin/teams", label: "Teams" },
   { href: "/admin/fixtures", label: "Fixtures & results" },
+  { href: "/admin/contact", label: "Contact messages" },
 ];
 
 export default async function AdminLayout({
