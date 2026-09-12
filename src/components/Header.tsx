@@ -11,7 +11,7 @@ const links = [
   { href: "/teams", label: "Teams" },
   { href: "/stats", label: "Stats" },
   { href: "/venues", label: "Venues" },
-  { href: "/news", label: "News" },
+  { href: "/rules", label: "Rules" },
 ];
 
 export function Header({ seasonName }: { seasonName?: string }) {

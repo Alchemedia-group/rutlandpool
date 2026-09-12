@@ -2,7 +2,6 @@ import Link from "next/link";
 import {
   getCurrentSeason,
   getFixtures,
-  getPublishedNews,
   getRawFixtures,
   getTeams,
 } from "@/lib/data";
@@ -25,7 +24,6 @@ export default async function HomePage({
   const { week } = await searchParams;
   const season = await getCurrentSeason();
   const fixtures = season ? await getFixtures(season.id) : [];
-  const news = await getPublishedNews();
   const teams = await getTeams();
   const rawFixtures = season ? await getRawFixtures(season.id) : [];
 
@@ -54,7 +52,6 @@ export default async function HomePage({
 
   const teamsById = new Map(teams.map((t) => [t.id, t]));
   const standings = computeStandings(teams.map((t) => t.id), rawFixtures).slice(0, 6);
-  const latestNews = news[0];
 
   return (
     <div className="space-y-10">
@@ -86,18 +83,6 @@ export default async function HomePage({
       <div className="grid gap-8 md:grid-cols-[1fr_320px]">
         <div className="space-y-8">
           <WeekResultsList fixtures={thisWeekFixtures} />
-
-          {latestNews && (
-            <div className="rounded-lg border-l-4 border-gold bg-cream-card px-5 py-4">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-gold">
-                League news
-              </p>
-              <Link href={`/news/${latestNews.slug}`} className="font-display text-lg font-bold hover:underline">
-                {latestNews.title}
-              </Link>
-              <p className="mt-1 text-sm text-ink/70">{latestNews.body}</p>
-            </div>
-          )}
         </div>
 
         <div className="space-y-8">

@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import type { Fixture, FixtureWithTeams, Frame, NewsPost, Player, Season, Team } from "@/lib/types";
+import type { Fixture, FixtureWithTeams, Frame, Player, Season, Team } from "@/lib/types";
 
 export async function getCurrentSeason(): Promise<Season | null> {
   const supabase = await createClient();
@@ -90,25 +90,4 @@ export async function getFramesForFixture(fixtureId: string): Promise<Frame[]> {
     .eq("fixture_id", fixtureId)
     .order("frame_number");
   return data ?? [];
-}
-
-export async function getPublishedNews(): Promise<NewsPost[]> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("news_posts")
-    .select("*")
-    .eq("published", true)
-    .order("published_at", { ascending: false });
-  return data ?? [];
-}
-
-export async function getNewsBySlug(slug: string): Promise<NewsPost | null> {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("news_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("published", true)
-    .maybeSingle();
-  return data;
 }

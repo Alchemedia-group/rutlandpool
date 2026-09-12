@@ -143,35 +143,6 @@ export async function deleteFixture(formData: FormData) {
   revalidatePath("/standings");
 }
 
-// ── News ────────────────────────────────────────────────────────────────
-
-export async function createNewsPost(formData: FormData) {
-  const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "").trim();
-  const published = formData.get("published") === "on";
-  if (!title || !body) return;
-
-  const supabase = await createClient();
-  await supabase.from("news_posts").insert({
-    title,
-    slug: `${slugify(title)}-${Date.now().toString(36)}`,
-    body,
-    published,
-    published_at: new Date().toISOString(),
-  });
-  revalidatePath("/admin/news");
-  revalidatePath("/news");
-}
-
-export async function deleteNewsPost(formData: FormData) {
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
-  const supabase = await createClient();
-  await supabase.from("news_posts").delete().eq("id", id);
-  revalidatePath("/admin/news");
-  revalidatePath("/news");
-}
-
 // ── Players ─────────────────────────────────────────────────────────────
 
 export async function createPlayer(formData: FormData) {

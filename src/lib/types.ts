@@ -56,13 +56,3 @@ export type Frame = {
   break_win: boolean;
   created_at: string;
 };
-
-export type NewsPost = {
-  id: string;
-  title: string;
-  slug: string;
-  body: string;
-  published: boolean;
-  published_at: string;
-  created_at: string;
-};
