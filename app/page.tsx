@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   getCurrentSeason,
   getFixtures,
@@ -6,15 +5,9 @@ import {
   getTeams,
 } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
+import { formatWeekDate } from "@/lib/format";
+import { WeekChips } from "@/components/WeekChips";
 import { WeekResultsList } from "@/components/WeekResultsList";
-
-function formatWeekDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
 
 export default async function HomePage({
   searchParams,
@@ -40,8 +33,6 @@ export default async function HomePage({
   const selectedDateKey = week && dateKeys.includes(week) ? week : upcomingDateKey;
   const weekIndex = dateKeys.indexOf(selectedDateKey);
 
-  const weekChips = dateKeys.slice(Math.max(0, weekIndex), Math.max(0, weekIndex) + 6);
-
   const thisWeekFixtures = fixtures.filter(
     (f) => new Date(f.scheduled_at).toISOString().slice(0, 10) === selectedDateKey
   );
@@ -62,23 +53,7 @@ export default async function HomePage({
         <span className="text-sm text-ink/50">All matches 8:00pm</span>
       </div>
 
-      {weekChips.length > 0 && (
-        <div className="-mt-6 flex flex-wrap gap-2">
-          {weekChips.map((d) => (
-            <Link
-              key={d}
-              href={`/?week=${d}`}
-              className={`rounded border px-3 py-1 text-sm transition ${
-                d === selectedDateKey
-                  ? "border-felt-dark bg-felt-dark text-white"
-                  : "border-ink/15 text-ink/60 hover:border-felt-dark hover:text-felt-dark"
-              }`}
-            >
-              {formatWeekDate(d)}
-            </Link>
-          ))}
-        </div>
-      )}
+      {dateKeys.length > 0 && <WeekChips dateKeys={dateKeys} selectedDateKey={selectedDateKey} />}
 
       <div className="grid gap-8 md:grid-cols-[1fr_320px]">
         <div className="space-y-8">

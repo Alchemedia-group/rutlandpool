@@ -1,3 +1,12 @@
+/** e.g. "2026-10-07" -> "Wed 7 Oct". */
+export function formatWeekDate(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
 /** Short badge code for a team, e.g. "UTFC 2" -> "U2", "Duke A" -> "DA". */
 export function teamBadgeCode(name: string): string {
   const parts = name.trim().split(/\s+/);
