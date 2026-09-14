@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { LEAGUE_TIME_ZONE } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 function formatShortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  return new Date(iso).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    timeZone: LEAGUE_TIME_ZONE,
+  });
 }
 
 export function TeamResultsList({

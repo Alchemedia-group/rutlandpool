@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getFramesForFixture, getPlayersForTeam } from "@/lib/data";
 import { FRAME_COUNT, frameTypeForNumber } from "@/lib/frames";
+import { formatKickoff } from "@/lib/format";
 import type { Fixture, Team } from "@/lib/types";
 import { saveMatch } from "../../actions";
 
@@ -38,7 +39,7 @@ export default async function AdminFixtureFramesPage({
         {fixture.home_team.name} v {fixture.away_team.name}
       </h1>
       <p className="mb-6 text-sm text-ink/50">
-        {new Date(fixture.scheduled_at).toLocaleString("en-GB")} — frame-by-frame results
+        {formatKickoff(fixture.scheduled_at, { withYear: true })} — frame-by-frame results
       </p>
 
       <p className="mb-4 rounded bg-cream-card px-4 py-3 text-sm text-ink/70">

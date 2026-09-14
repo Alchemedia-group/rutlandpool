@@ -1,9 +1,29 @@
+/** UK local time — matches are always quoted at real UK clock time (8pm),
+ * so conversions must go through this rather than the server's own
+ * timezone (UTC on Vercel), which would show the wrong hour half the
+ * season since the BST/GMT offset from a stored UTC timestamp changes. */
+export const LEAGUE_TIME_ZONE = "Europe/London";
+
 /** e.g. "2026-10-07" -> "Wed 7 Oct". */
 export function formatWeekDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-GB", {
     weekday: "short",
     day: "numeric",
     month: "short",
+    timeZone: LEAGUE_TIME_ZONE,
+  });
+}
+
+/** e.g. "Wed, 7 Oct, 20:00" (or with the year, for admin views). */
+export function formatKickoff(iso: string, opts: { withYear?: boolean } = {}): string {
+  return new Date(iso).toLocaleString("en-GB", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    ...(opts.withYear ? { year: "numeric" as const } : {}),
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: LEAGUE_TIME_ZONE,
   });
 }
 

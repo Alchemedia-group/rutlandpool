@@ -1,16 +1,8 @@
 import Link from "next/link";
 import { getCurrentSeason, getFixtures, getRawFixtures, getTeams } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { fixtureVenue } from "@/lib/format";
+import { fixtureVenue, formatWeekDate } from "@/lib/format";
 import { StandingsTable } from "@/components/StandingsTable";
-
-function formatWeekDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-GB", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-}
 
 export default async function StandingsPage() {
   const season = await getCurrentSeason();

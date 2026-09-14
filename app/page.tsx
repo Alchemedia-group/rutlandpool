@@ -5,7 +5,7 @@ import {
   getTeams,
 } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { fixtureVenue, formatWeekDate } from "@/lib/format";
+import { fixtureVenue, formatKickoff, formatWeekDate } from "@/lib/format";
 import { WeekChips } from "@/components/WeekChips";
 import { WeekResultsList } from "@/components/WeekResultsList";
 
@@ -66,15 +66,7 @@ export default async function HomePage({
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold">
                 Next up
               </p>
-              <p className="text-sm text-gray-300">
-                {new Date(nextUp.scheduled_at).toLocaleString("en-GB", {
-                  weekday: "short",
-                  day: "numeric",
-                  month: "short",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </p>
+              <p className="text-sm text-gray-300">{formatKickoff(nextUp.scheduled_at)}</p>
               <p className="mt-2 font-display text-lg font-bold">
                 {nextUp.home_team.name}
                 <span className="ml-1 text-xs font-normal text-gray-400">(H)</span>

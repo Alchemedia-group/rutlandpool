@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fixtureVenue } from "@/lib/format";
+import { LEAGUE_TIME_ZONE, fixtureVenue } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 function formatDate(iso: string) {
@@ -8,6 +8,7 @@ function formatDate(iso: string) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: LEAGUE_TIME_ZONE,
   });
 }
 
