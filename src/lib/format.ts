@@ -7,6 +7,12 @@ export function formatWeekDate(iso: string): string {
   });
 }
 
+/** A fixture's venue is its own override if set, otherwise the home team's
+ * registered venue — matches are played at the home side's pub/club. */
+export function fixtureVenue(fixture: { venue: string | null; home_team: { venue: string | null } }): string | null {
+  return fixture.venue ?? fixture.home_team.venue ?? null;
+}
+
 /** Short badge code for a team, e.g. "UTFC 2" -> "U2", "Duke A" -> "DA". */
 export function teamBadgeCode(name: string): string {
   const parts = name.trim().split(/\s+/);

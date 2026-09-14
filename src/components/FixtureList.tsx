@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { fixtureVenue } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 function formatDate(iso: string) {
@@ -35,6 +36,7 @@ export function FixtureList({
         const won = perspectiveTeamId && ownFrames !== null && oppFrames !== null
           ? ownFrames > oppFrames
           : null;
+        const venue = fixtureVenue(fixture);
 
         return (
           <li key={fixture.id} className="flex flex-wrap items-center justify-between gap-2 py-4">
@@ -43,14 +45,16 @@ export function FixtureList({
                 <Link href={`/teams/${fixture.home_team.slug}`} className="hover:underline">
                   {fixture.home_team.name}
                 </Link>
+                <span className="ml-1 text-xs font-normal text-ink/40">(H)</span>
                 {" v "}
                 <Link href={`/teams/${fixture.away_team.slug}`} className="hover:underline">
                   {fixture.away_team.name}
                 </Link>
+                <span className="ml-1 text-xs font-normal text-ink/40">(A)</span>
               </p>
               <p className="text-sm text-ink/50">
                 {formatDate(fixture.scheduled_at)}
-                {fixture.venue ? ` · ${fixture.venue}` : ""}
+                {venue ? ` · ${venue}` : ""}
                 {fixture.status !== "scheduled" && fixture.status !== "played"
                   ? ` · ${fixture.status}`
                   : ""}

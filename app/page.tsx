@@ -5,7 +5,7 @@ import {
   getTeams,
 } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { formatWeekDate } from "@/lib/format";
+import { fixtureVenue, formatWeekDate } from "@/lib/format";
 import { WeekChips } from "@/components/WeekChips";
 import { WeekResultsList } from "@/components/WeekResultsList";
 
@@ -77,10 +77,14 @@ export default async function HomePage({
               </p>
               <p className="mt-2 font-display text-lg font-bold">
                 {nextUp.home_team.name}
+                <span className="ml-1 text-xs font-normal text-gray-400">(H)</span>
                 <span className="mx-2 text-ink/40">v</span>
                 {nextUp.away_team.name}
+                <span className="ml-1 text-xs font-normal text-gray-400">(A)</span>
               </p>
-              {nextUp.venue && <p className="mt-1 text-sm text-gray-300">{nextUp.venue}</p>}
+              {fixtureVenue(nextUp) && (
+                <p className="mt-1 text-sm text-gray-300">{fixtureVenue(nextUp)}</p>
+              )}
             </div>
           )}
 

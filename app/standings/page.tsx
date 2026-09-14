@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getCurrentSeason, getFixtures, getRawFixtures, getTeams } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
+import { fixtureVenue } from "@/lib/format";
 import { StandingsTable } from "@/components/StandingsTable";
 
 function formatWeekDate(iso: string) {
@@ -53,17 +54,25 @@ export default async function StandingsPage() {
               Fixtures — {formatWeekDate(nextDateKey)}
             </h2>
             <ul className="divide-y divide-ink/10 rounded-lg border border-ink/10">
-              {upcomingWeek.map((fixture) => (
-                <li key={fixture.id} className="px-4 py-3 text-sm">
-                  <Link href={`/teams/${fixture.home_team.slug}`} className="hover:underline">
-                    {fixture.home_team.name}
-                  </Link>
-                  <span className="mx-1 text-ink/40">v</span>
-                  <Link href={`/teams/${fixture.away_team.slug}`} className="hover:underline">
-                    {fixture.away_team.name}
-                  </Link>
-                </li>
-              ))}
+              {upcomingWeek.map((fixture) => {
+                const venue = fixtureVenue(fixture);
+                return (
+                  <li key={fixture.id} className="px-4 py-3 text-sm">
+                    <div>
+                      <Link href={`/teams/${fixture.home_team.slug}`} className="hover:underline">
+                        {fixture.home_team.name}
+                      </Link>
+                      <span className="ml-1 text-xs text-ink/40">(H)</span>
+                      <span className="mx-1 text-ink/40">v</span>
+                      <Link href={`/teams/${fixture.away_team.slug}`} className="hover:underline">
+                        {fixture.away_team.name}
+                      </Link>
+                      <span className="ml-1 text-xs text-ink/40">(A)</span>
+                    </div>
+                    {venue && <p className="mt-0.5 text-xs text-ink/40">{venue}</p>}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
