@@ -11,10 +11,10 @@
     "scheme": "rcpl",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rutlandpoolleague.app"
+      "bundleIdentifier": "com.alchemedia.rutland"
     },
     "android": {
-      "package": "com.rutlandpoolleague.app",
+      "package": "com.alchemedia.rutland",
       "adaptiveIcon": {
         "backgroundColor": "#123D2A",
         "foregroundImage": "./assets/android-icon-foreground.png",
