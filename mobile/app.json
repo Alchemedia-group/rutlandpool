@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Rutland County Pool League",
+    "slug": "rutland",
+    "owner": "duncans",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFDF8",
+    "scheme": "rcpl",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rutlandpoolleague.app"
+    },
+    "android": {
+      "package": "com.rutlandpoolleague.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#123D2A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#123D2A"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "e16e63ae-5ebf-4273-88fe-09d2ef78487b"
+      }
+    }
+  }
+}
