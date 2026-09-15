@@ -11,7 +11,10 @@
     "scheme": "rcpl",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.alchemedia.rutland"
+      "bundleIdentifier": "com.alchemedia.rutland",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.alchemedia.rutland",
