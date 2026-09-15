@@ -18,13 +18,14 @@ export default async function LoginPage({
       <form action={login} className="space-y-4">
         <input type="hidden" name="next" value={next ?? "/admin"} />
         <div>
-          <label className="block text-sm font-medium" htmlFor="email">
-            Email
+          <label className="block text-sm font-medium" htmlFor="identifier">
+            Email or username
           </label>
           <input
-            id="email"
-            name="email"
-            type="email"
+            id="identifier"
+            name="identifier"
+            type="text"
+            autoComplete="username"
             required
             className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
           />

@@ -16,11 +16,26 @@ function slugify(input: string) {
 // ── Auth ────────────────────────────────────────────────────────────────
 
 export async function login(formData: FormData) {
-  const email = String(formData.get("email") ?? "");
+  const identifier = String(formData.get("identifier") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "/admin");
 
   const supabase = await createClient();
+
+  // Supabase Auth is still email-based under the hood — a plain username
+  // (no "@") is resolved to its linked email via a narrow lookup function
+  // first, so the same login form works for both.
+  let email = identifier;
+  if (!identifier.includes("@")) {
+    const { data: resolvedEmail } = await supabase.rpc("email_for_username", {
+      p_username: identifier,
+    });
+    if (!resolvedEmail) {
+      redirect(`/admin/login?error=${encodeURIComponent("Unknown username or email")}&next=${encodeURIComponent(next)}`);
+    }
+    email = resolvedEmail;
+  }
+
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     redirect(`/admin/login?error=${encodeURIComponent(error.message)}&next=${encodeURIComponent(next)}`);
