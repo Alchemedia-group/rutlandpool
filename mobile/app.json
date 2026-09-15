@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Rutland County Pool League",
-    "slug": "rutland",
+    "slug": "rutlandpool",
     "owner": "duncans",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -39,7 +39,7 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "e16e63ae-5ebf-4273-88fe-09d2ef78487b"
+        "projectId": "c29e2194-36f1-4952-809b-63e650516080"
       }
     }
   }
