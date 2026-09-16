@@ -14,6 +14,10 @@ export function Footer() {
             Contact
           </a>
           {" · "}
+          <a href="/privacy-policy" className="underline hover:text-ink/80">
+            Privacy Policy
+          </a>
+          {" · "}
           <a href="/admin/login" className="underline hover:text-ink/80">
             Committee login
           </a>
