@@ -34,16 +34,29 @@ export default function PrivacyPolicyPage() {
           to control access to the admin tools.
         </li>
       </ul>
-      <p className="mt-4 text-ink/80">
-        We don&apos;t use cookies for tracking, run advertising, or include
-        any analytics or tracking software in the app.
+      <h2 className="mt-8 text-lg font-semibold">Analytics</h2>
+      <p className="mt-2 text-ink/80">
+        The website uses Google Analytics to understand how many people
+        visit and which pages are popular. This sets a cookie in your
+        browser and records anonymised, aggregate usage data — it
+        doesn&apos;t identify you personally, and we don&apos;t use it for
+        advertising. You can opt out using a browser extension such as the{" "}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          className="text-felt underline"
+        >
+          Google Analytics Opt-out Add-on
+        </a>
+        . Because the app displays the same website pages, this same
+        analytics also runs when you use the app — there&apos;s no separate
+        app-only tracking on top of it.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">The app</h2>
       <p className="mt-2 text-ink/80">
         The iOS and Android app is a simple wrapper around this website —
-        it doesn&apos;t collect any additional information of its own, use
-        location data, or send push notifications.
+        it doesn&apos;t collect any information beyond what&apos;s described
+        above, use location data, or send push notifications.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold">How we store data</h2>
