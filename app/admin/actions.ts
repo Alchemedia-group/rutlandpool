@@ -91,6 +91,32 @@ export async function deleteTeam(formData: FormData) {
   revalidatePath("/teams");
 }
 
+export async function updateTeam(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!id || !name) return;
+
+  const field = (key: string) => String(formData.get(key) ?? "").trim() || null;
+
+  const supabase = await createClient();
+  await supabase
+    .from("teams")
+    .update({
+      name,
+      venue: field("venue"),
+      venue_address: field("venue_address"),
+      venue_phone: field("venue_phone"),
+      venue_hours: field("venue_hours"),
+      venue_description: field("venue_description"),
+      venue_map_url: field("venue_map_url"),
+    })
+    .eq("id", id);
+  revalidatePath(`/admin/teams/${id}`);
+  revalidatePath("/admin/teams");
+  revalidatePath("/teams");
+  revalidatePath("/venues");
+}
+
 // ── Fixtures ────────────────────────────────────────────────────────────
 
 export async function createFixture(formData: FormData) {

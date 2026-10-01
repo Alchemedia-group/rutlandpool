@@ -10,6 +10,11 @@ export type Team = {
   name: string;
   slug: string;
   venue: string | null;
+  venue_address: string | null;
+  venue_phone: string | null;
+  venue_hours: string | null;
+  venue_description: string | null;
+  venue_map_url: string | null;
   logo_url: string | null;
   created_at: string;
 };
