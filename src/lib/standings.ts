@@ -17,14 +17,9 @@ export type TeamRow = {
   points: number;
 };
 
-const POINTS_PER_FRAME_WON = 2;
-const POINTS_PER_FRAME_LOST = 1;
-const MATCH_WIN_BONUS = 5;
-
 /**
- * RCPL 26/27 scoring: 2 points per frame won, 1 per frame lost, plus a
- * 5-point bonus to whichever side won more frames (split 2.5/2.5 on an
- * equal-frames draw).
+ * RCPL 26/27 scoring: 1 point per frame won — an 8-1 match win scores 8
+ * points for the winner and 1 for the loser. No bonus points.
  */
 export function computeStandings(
   teamIds: string[],
@@ -69,22 +64,18 @@ export function computeStandings(
     away.framesFor += af;
     away.framesAgainst += hf;
 
-    home.points += hf * POINTS_PER_FRAME_WON + af * POINTS_PER_FRAME_LOST;
-    away.points += af * POINTS_PER_FRAME_WON + hf * POINTS_PER_FRAME_LOST;
+    home.points += hf;
+    away.points += af;
 
     if (hf > af) {
       home.won += 1;
       away.lost += 1;
-      home.points += MATCH_WIN_BONUS;
     } else if (af > hf) {
       away.won += 1;
       home.lost += 1;
-      away.points += MATCH_WIN_BONUS;
     } else {
       home.drawn += 1;
       away.drawn += 1;
-      home.points += MATCH_WIN_BONUS / 2;
-      away.points += MATCH_WIN_BONUS / 2;
     }
   }
 
