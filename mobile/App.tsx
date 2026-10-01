@@ -14,8 +14,14 @@ import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import WebView, { type WebViewNavigation } from "react-native-webview";
 
 const SITE_URL = "https://rutlandcountypoolleague.com";
+const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 const FELT_DARK = "#123D2A";
 const CREAM = "#FFFDF8";
+// Some Android WebView versions don't reliably fire onLoadEnd after every
+// navigation — this hides the loading overlay regardless after a timeout,
+// so a page that actually finished loading is never hidden behind a stuck
+// spinner forever.
+const LOADING_TIMEOUT_MS = 8000;
 
 export default function App() {
   return (
@@ -38,6 +44,12 @@ function SiteWebView() {
   const handleNavigationStateChange = useCallback((navState: WebViewNavigation) => {
     setCanGoBack(navState.canGoBack);
   }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timeout = setTimeout(() => setLoading(false), LOADING_TIMEOUT_MS);
+    return () => clearTimeout(timeout);
+  }, [loading]);
 
   // Android hardware/gesture back button steps back through the site's own
   // history before falling through to the OS default (closing the app).
@@ -88,12 +100,19 @@ function SiteWebView() {
         pullToRefreshEnabled
         allowsBackForwardNavigationGestures
         setSupportMultipleWindows={false}
+        javaScriptEnabled
+        domStorageEnabled
         originWhitelist={["https://*"]}
         onShouldStartLoadWithRequest={(request) => {
           // Keep the site itself inside the app; hand anything else (a
-          // WhatsApp link, a map, an external site) off to the OS.
-          if (request.url.startsWith(SITE_URL) || request.url === "about:blank") {
-            return true;
+          // WhatsApp link, a map, an external site) off to the OS. Compared
+          // by hostname rather than a raw string prefix so a trailing
+          // slash, query string, or port doesn't fail the check.
+          if (request.url === "about:blank") return true;
+          try {
+            if (new URL(request.url).hostname === SITE_HOSTNAME) return true;
+          } catch {
+            // Not a parseable absolute URL — fall through to external.
           }
           Linking.openURL(request.url).catch(() => {});
           return false;
