@@ -18,10 +18,10 @@ const SITE_HOSTNAME = new URL(SITE_URL).hostname;
 const FELT_DARK = "#123D2A";
 const CREAM = "#FFFDF8";
 // Some Android WebView versions don't reliably fire onLoadEnd after every
-// navigation — this hides the loading overlay regardless after a timeout,
-// so a page that actually finished loading is never hidden behind a stuck
-// spinner forever.
-const LOADING_TIMEOUT_MS = 8000;
+// navigation — onLoadProgress reaching 1 is the primary, fast signal that
+// the page has actually finished loading. This backstop only covers the
+// rare case where even that doesn't fire, so it's short, not a blind wait.
+const LOADING_TIMEOUT_MS = 1500;
 
 export default function App() {
   return (
@@ -104,6 +104,9 @@ function SiteWebView() {
         onNavigationStateChange={handleNavigationStateChange}
         onLoadStart={() => setLoading(true)}
         onLoadEnd={() => setLoading(false)}
+        onLoadProgress={(event) => {
+          if (event.nativeEvent.progress >= 1) setLoading(false);
+        }}
         onError={() => setHasError(true)}
         onHttpError={(event) => {
           if (event.nativeEvent.statusCode >= 500) setHasError(true);
