@@ -45,6 +45,17 @@ function SiteWebView() {
     setCanGoBack(navState.canGoBack);
   }, []);
 
+  // The site rebuilds with new content-hashed JS filenames on every deploy.
+  // If the WebView's own HTTP cache is holding an older cached page that
+  // references a since-deleted chunk filename, that chunk 404s and the
+  // page's JS never finishes loading — breaking in-app navigation beyond
+  // whatever page happened to be cached. Clearing on mount, on top of
+  // disabling the cache below, guards against a stale cache surviving an
+  // in-place app update from an earlier version.
+  useEffect(() => {
+    webViewRef.current?.clearCache(true);
+  }, []);
+
   useEffect(() => {
     if (!loading) return;
     const timeout = setTimeout(() => setLoading(false), LOADING_TIMEOUT_MS);
@@ -102,6 +113,7 @@ function SiteWebView() {
         setSupportMultipleWindows={false}
         javaScriptEnabled
         domStorageEnabled
+        cacheEnabled={false}
         originWhitelist={["https://*"]}
         onShouldStartLoadWithRequest={(request) => {
           // Keep the site itself inside the app; hand anything else (a
