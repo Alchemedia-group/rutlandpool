@@ -3,7 +3,7 @@
     "name": "Rutland County Pool League",
     "slug": "rutlandpool",
     "owner": "duncans",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -37,6 +37,15 @@
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#123D2A"
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableProguardInReleaseBuilds": true,
+            "enableShrinkResourcesInReleaseBuilds": true
+          }
         }
       ]
     ],
