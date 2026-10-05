@@ -35,7 +35,7 @@ export default async function StandingsPage() {
         {season && <p className="mb-6 text-ink/50">{season.name}</p>}
         <StandingsTable rows={rows} teamsById={teamsById} />
         <p className="mt-4 text-xs text-ink/40">
-          2 points per frame won, 1 per frame lost, 5 for the match. Ties broken by frame difference, then frames for.
+          The winning team scores points equal to the frames they won; the losing team scores 0. Ties broken by frame difference, then frames for.
         </p>
       </div>
 
