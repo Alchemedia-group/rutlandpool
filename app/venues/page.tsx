@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getTeams } from "@/lib/data";
+import { getActiveTeams } from "@/lib/data";
 import type { Team } from "@/lib/types";
 
 type VenueGroup = {
@@ -42,7 +42,7 @@ function groupByVenue(teams: Team[]): VenueGroup[] {
 }
 
 export default async function VenuesPage() {
-  const teams = await getTeams();
+  const teams = await getActiveTeams();
   const groups = groupByVenue(teams);
   const withoutVenue = teams.filter((t) => !t.venue);
 

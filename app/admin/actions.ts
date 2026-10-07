@@ -109,12 +109,14 @@ export async function updateTeam(formData: FormData) {
       venue_hours: field("venue_hours"),
       venue_description: field("venue_description"),
       venue_map_url: field("venue_map_url"),
+      withdrawn: formData.get("withdrawn") === "on",
     })
     .eq("id", id);
   revalidatePath(`/admin/teams/${id}`);
   revalidatePath("/admin/teams");
   revalidatePath("/teams");
   revalidatePath("/venues");
+  revalidatePath("/", "layout");
 }
 
 // ── Fixtures ────────────────────────────────────────────────────────────

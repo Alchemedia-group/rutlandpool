@@ -17,6 +17,11 @@ export async function getTeams(): Promise<Team[]> {
   return data ?? [];
 }
 
+/** Teams still in the league — what every public page lists and ranks. */
+export async function getActiveTeams(): Promise<Team[]> {
+  return (await getTeams()).filter((t) => !t.withdrawn);
+}
+
 export async function getTeamBySlug(slug: string): Promise<Team | null> {
   const supabase = await createClient();
   const { data } = await supabase

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LEAGUE_TIME_ZONE, fixtureVenue } from "@/lib/format";
+import { LEAGUE_TIME_ZONE, byeTeam, fixtureVenue } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 function formatDate(iso: string) {
@@ -38,6 +38,25 @@ export function FixtureList({
           ? ownFrames > oppFrames
           : null;
         const venue = fixtureVenue(fixture);
+        const bye = byeTeam(fixture);
+
+        if (bye) {
+          return (
+            <li key={fixture.id} className="flex flex-wrap items-center justify-between gap-2 py-4">
+              <div>
+                <p className="font-medium">
+                  <Link href={`/teams/${bye.slug}`} className="hover:underline">
+                    {bye.name}
+                  </Link>
+                </p>
+                <p className="text-sm text-ink/50">{formatDate(fixture.scheduled_at)}</p>
+              </div>
+              <div className="rounded border border-ink/15 px-3 py-1 font-display text-sm font-bold text-ink/40">
+                Bye
+              </div>
+            </li>
+          );
+        }
 
         return (
           <li key={fixture.id} className="flex flex-wrap items-center justify-between gap-2 py-4">

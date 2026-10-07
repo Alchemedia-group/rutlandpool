@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { getCurrentSeason, getFixtures, getRawFixtures, getTeams } from "@/lib/data";
+import { getActiveTeams, getCurrentSeason, getFixtures, getRawFixtures } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { fixtureVenue, formatWeekDate } from "@/lib/format";
+import { byeTeam, fixtureVenue, formatWeekDate } from "@/lib/format";
 import { StandingsTable } from "@/components/StandingsTable";
 
 export default async function StandingsPage() {
   const season = await getCurrentSeason();
-  const teams = await getTeams();
+  const teams = await getActiveTeams();
   const rawFixtures = season ? await getRawFixtures(season.id) : [];
   const fixtures = season ? await getFixtures(season.id) : [];
 
@@ -45,6 +45,17 @@ export default async function StandingsPage() {
             <ul className="divide-y divide-ink/10 rounded-lg border border-ink/10">
               {upcomingWeek.map((fixture) => {
                 const venue = fixtureVenue(fixture);
+                const bye = byeTeam(fixture);
+                if (bye) {
+                  return (
+                    <li key={fixture.id} className="px-4 py-3 text-sm">
+                      <Link href={`/teams/${bye.slug}`} className="hover:underline">
+                        {bye.name}
+                      </Link>
+                      <span className="ml-2 text-xs text-ink/40">Bye</span>
+                    </li>
+                  );
+                }
                 return (
                   <li key={fixture.id} className="px-4 py-3 text-sm">
                     <div>

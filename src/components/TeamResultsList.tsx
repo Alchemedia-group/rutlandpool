@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LEAGUE_TIME_ZONE } from "@/lib/format";
+import { LEAGUE_TIME_ZONE, byeTeam } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 function formatShortDate(iso: string) {
@@ -30,6 +30,18 @@ export function TeamResultsList({
         const oppFrames = isHome ? fixture.away_frames : fixture.home_frames;
         const played = fixture.status === "played" && ownFrames !== null && oppFrames !== null;
         const won = played ? ownFrames! > oppFrames! : null;
+
+        if (byeTeam(fixture)) {
+          return (
+            <li key={fixture.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+              <span className="w-14 shrink-0 text-ink/40">{formatShortDate(fixture.scheduled_at)}</span>
+              <span className="flex-1 truncate text-ink/50">Bye</span>
+              <span className="rounded border border-ink/15 px-2 py-0.5 font-display text-xs font-bold text-ink/40">
+                Bye
+              </span>
+            </li>
+          );
+        }
 
         return (
           <li key={fixture.id} className="flex items-center justify-between gap-3 px-4 py-3 text-sm">

@@ -2,10 +2,10 @@ import {
   getCurrentSeason,
   getFixtures,
   getRawFixtures,
-  getTeams,
+  getActiveTeams,
 } from "@/lib/data";
 import { computeStandings } from "@/lib/standings";
-import { fixtureVenue, formatKickoff, formatWeekDate } from "@/lib/format";
+import { byeTeam, fixtureVenue, formatKickoff, formatWeekDate } from "@/lib/format";
 import { WeekChips } from "@/components/WeekChips";
 import { WeekResultsList } from "@/components/WeekResultsList";
 
@@ -17,7 +17,7 @@ export default async function HomePage({
   const { week } = await searchParams;
   const season = await getCurrentSeason();
   const fixtures = season ? await getFixtures(season.id) : [];
-  const teams = await getTeams();
+  const teams = await getActiveTeams();
   const rawFixtures = season ? await getRawFixtures(season.id) : [];
 
   const now = Date.now();
@@ -38,7 +38,9 @@ export default async function HomePage({
   );
 
   const nextUp = fixtures
-    .filter((f) => f.status === "scheduled" && new Date(f.scheduled_at).getTime() >= now)
+    .filter(
+      (f) => f.status === "scheduled" && !byeTeam(f) && new Date(f.scheduled_at).getTime() >= now
+    )
     .sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime())[0];
 
   const teamsById = new Map(teams.map((t) => [t.id, t]));

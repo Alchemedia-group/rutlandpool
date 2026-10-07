@@ -16,6 +16,7 @@ export type Team = {
   venue_description: string | null;
   venue_map_url: string | null;
   logo_url: string | null;
+  withdrawn: boolean;
   created_at: string;
 };
 

@@ -6,11 +6,11 @@ import {
   getPlayersForTeam,
   getRawFixtures,
   getTeamBySlug,
-  getTeams,
+  getActiveTeams,
 } from "@/lib/data";
 import { computeCombinedPlayerRecords } from "@/lib/playerStats";
 import { computeStandings } from "@/lib/standings";
-import { ordinalPosition, shortName, teamBadgeCode } from "@/lib/format";
+import { byeTeam, ordinalPosition, shortName, teamBadgeCode } from "@/lib/format";
 import { TeamResultsList } from "@/components/TeamResultsList";
 
 export default async function TeamPage({
@@ -28,7 +28,7 @@ export default async function TeamPage({
   const frames = season ? await getFramesForSeason(season.id) : [];
   const records = new Map(computeCombinedPlayerRecords(frames).map((r) => [r.player_id, r]));
 
-  const teams = await getTeams();
+  const teams = await getActiveTeams();
   const rawFixtures = season ? await getRawFixtures(season.id) : [];
   const standings = computeStandings(
     teams.map((t) => t.id),
@@ -39,8 +39,12 @@ export default async function TeamPage({
 
   const captain = players.find((p) => p.is_captain);
 
-  const played = fixtures.filter((f) => f.status === "played");
-  const upcoming = fixtures.filter((f) => f.status !== "played");
+  // A bye counts as done once its week has passed, so it sits with results.
+  const now = Date.now();
+  const isDone = (f: (typeof fixtures)[number]) =>
+    f.status === "played" || (byeTeam(f) !== null && new Date(f.scheduled_at).getTime() < now);
+  const played = fixtures.filter(isDone);
+  const upcoming = fixtures.filter((f) => !isDone(f));
 
   return (
     <div>

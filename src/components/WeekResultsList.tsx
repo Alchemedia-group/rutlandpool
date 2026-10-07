@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { fixtureVenue } from "@/lib/format";
+import { byeTeam, fixtureVenue } from "@/lib/format";
 import type { FixtureWithTeams } from "@/lib/types";
 
 /**
@@ -17,6 +17,22 @@ export function WeekResultsList({ fixtures }: { fixtures: FixtureWithTeams[] }) 
     <ul className="divide-y divide-ink/10">
       {fixtures.map((fixture) => {
         const venue = fixtureVenue(fixture);
+        const bye = byeTeam(fixture);
+        if (bye) {
+          return (
+            <li key={fixture.id} className="py-4">
+              <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                <Link href={`/teams/${bye.slug}`} className="font-semibold hover:underline">
+                  {bye.name}
+                </Link>
+                <div className="rounded border border-ink/15 px-3 py-1 font-display text-sm font-bold text-ink/40">
+                  Bye
+                </div>
+                <span />
+              </div>
+            </li>
+          );
+        }
         return (
           <li key={fixture.id} className="py-4">
             <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">

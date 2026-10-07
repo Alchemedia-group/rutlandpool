@@ -86,6 +86,10 @@ export default async function AdminTeamSquadPage({
               className="mt-1 w-full rounded border border-ink/15 px-3 py-2"
             />
           </div>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="withdrawn" defaultChecked={team.withdrawn} />
+            Withdrawn from the league (removed from the table; opponents get a bye)
+          </label>
           <button type="submit" className="w-fit rounded bg-felt px-4 py-2 text-white">
             Save team
           </button>

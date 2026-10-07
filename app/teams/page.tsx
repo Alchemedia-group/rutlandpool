@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { getTeams } from "@/lib/data";
+import { getActiveTeams } from "@/lib/data";
 
 export default async function TeamsPage() {
-  const teams = await getTeams();
+  const teams = await getActiveTeams();
 
   return (
     <div>

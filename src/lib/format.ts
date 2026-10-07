@@ -33,6 +33,18 @@ export function fixtureVenue(fixture: { venue: string | null; home_team: { venue
   return fixture.venue ?? fixture.home_team.venue ?? null;
 }
 
+/** A fixture against a team that has left the league is a bye for the
+ * other side: shown as "Bye", scores 0 points, no cancellation penalty.
+ * Returns the team that still has the fixture, or null if it isn't a bye. */
+export function byeTeam<T extends { withdrawn: boolean }>(fixture: {
+  home_team: T;
+  away_team: T;
+}): T | null {
+  if (fixture.away_team.withdrawn) return fixture.home_team;
+  if (fixture.home_team.withdrawn) return fixture.away_team;
+  return null;
+}
+
 /** Short badge code for a team, e.g. "UTFC 2" -> "U2", "Duke A" -> "DA". */
 export function teamBadgeCode(name: string): string {
   const parts = name.trim().split(/\s+/);
