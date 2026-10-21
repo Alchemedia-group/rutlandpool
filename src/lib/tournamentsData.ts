@@ -41,17 +41,20 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
   { id: "s19", player1: "Neil Williams", player2: "Craig Guest" },
 ];
 
+// Round 1 draw was reshuffled (same 24 players, re-randomized opponents) —
+// ids keep their original draw position for history; order below is the
+// current published draw.
 export const tournamentDoublesRound1: TournamentDoublesTie[] = [
-  { id: "d1", pair1: ["Andy Dougie Robb", "Wayne Clarke"], pair2: ["Rhys Hughes", "Dave Wildman"] },
-  { id: "d2", pair1: ["Jack Towell", "Neil Roberton"], pair2: ["Sam Blackwell", "Freddy Williamson"] },
-  { id: "d3", pair1: ["Lewis Fitches", "Aaron Simpson"], pair2: ["Remi Sadio", "John Robertson"] },
-  { id: "d4", pair1: ["Ian Saddington", "Melvin Ward"], pair2: ["Paul Saddington", "Ade Naylor"] },
-  { id: "d5", pair1: ["Mikie Hone", "Sam Mcall"], pair2: ["Mel Guest", "Steve B"] },
-  { id: "d6", pair1: ["Ollie Webb", "Will Howe"], pair2: ["Mark Roberts", "Mo Bateman"] },
-  { id: "d7", pair1: ["Paul Dear", "Cam Saddington"], pair2: ["Andy Saddington", "Rob Barker"] },
-  { id: "d8", pair1: ["Graeme Douglas", "Nigel Rose"], pair2: ["Nigel Halmshaw", "Rob Stimpson"] },
-  { id: "d9", pair1: ["Leanne Robbins", "Graham Dexter"], pair2: ["Ryan Davies", "Jimmy Howe"] },
-  { id: "d10", pair1: ["Ryan Sheehan", "Dil"], pair2: ["Scott Mulheron", "Ollie Mulheron"] },
   { id: "d11", pair1: ["Wayne Bloxham", "Shaun Bennet"], pair2: ["Craig Guest", "Neil Williams"] },
-  { id: "d12", pair1: ["Stuart Saddington", "Craig Ward"], pair2: ["Jamie Saddington", "Carl Simpson"] },
+  { id: "d2", pair1: ["Jack Towell", "Neil Roberton"], pair2: ["Nigel Halmshaw", "Rob Stimpson"] },
+  { id: "d6a", pair1: ["Ollie Webb", "Will Howe"], pair2: ["Sam Blackwell", "Freddy Williamson"] },
+  { id: "d1", pair1: ["Andy Dougie Robb", "Wayne Clarke"], pair2: ["Rhys Hughes", "Dave Wildman"] },
+  { id: "d8a", pair1: ["Graeme Douglas", "Nigel Rose"], pair2: ["Scott Mulheron", "Ollie Mulheron"] },
+  { id: "d4a", pair1: ["Ian Saddington", "Melvin Ward"], pair2: ["Ryan Sheehan", "Dil"] },
+  { id: "d12a", pair1: ["Stuart Saddington", "Craig Ward"], pair2: ["Ryan Davies", "Jimmy Howe"] },
+  { id: "d5a", pair1: ["Mel Guest", "Steve B"], pair2: ["Leanne Robbins", "Graham Dexter"] },
+  { id: "d6b", pair1: ["Mark Roberts", "Mo Bateman"], pair2: ["Lewis Fitches", "Aaron Simpson"] },
+  { id: "d7a", pair1: ["Andy Saddington", "Rob Barker"], pair2: ["Jamie Saddington", "Carl Simpson"] },
+  { id: "d3a", pair1: ["Remi Sadio", "John Robertson"], pair2: ["Paul Saddington", "Ade Naylor"] },
+  { id: "d7b", pair1: ["Paul Dear", "Cam Saddington"], pair2: ["Mikie Hone", "Sam Mcall"] },
 ];
