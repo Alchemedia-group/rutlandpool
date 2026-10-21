@@ -11,6 +11,7 @@ const links = [
   { href: "/standings", label: "Standings" },
   { href: "/teams", label: "Teams" },
   { href: "/stats", label: "Stats" },
+  { href: "/tournaments", label: "Tournaments", isNew: true },
   { href: "/venues", label: "Venues" },
   { href: "/rules", label: "Rules" },
   { href: "/agm-2026", label: "AGM 2026" },
@@ -79,6 +80,11 @@ export function Header({ seasonName }: { seasonName?: string }) {
               }`}
             >
               {link.label}
+              {link.isNew && (
+                <span className="ml-1.5 rounded bg-gold px-1 py-0.5 align-[2px] text-[10px] font-bold normal-case tracking-normal text-felt-dark">
+                  New
+                </span>
+              )}
             </Link>
           ))}
         </div>
@@ -121,6 +127,11 @@ export function Header({ seasonName }: { seasonName?: string }) {
               }`}
             >
               {link.label}
+              {link.isNew && (
+                <span className="ml-1.5 rounded bg-gold px-1 py-0.5 align-[2px] text-[10px] font-bold normal-case tracking-normal text-felt-dark">
+                  New
+                </span>
+              )}
             </Link>
           ))}
         </nav>
