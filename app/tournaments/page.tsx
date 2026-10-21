@@ -22,6 +22,7 @@ export default function TournamentsPage() {
         <p className="mt-1 font-display text-lg font-bold text-felt">
           Play by {formatDate(tournamentRound1Deadline)}
         </p>
+        <p className="mt-1 text-sm font-semibold text-ink">All matches are best of 3 frames.</p>
         <p className="mt-1 text-sm text-ink/70">
           Players arrange their own match with their opponent and agree a referee, or ask the
           league to allocate one. Round 2 fixtures are posted here once every Round 1 result is in.
@@ -43,6 +44,7 @@ export default function TournamentsPage() {
         <div>
           <h2 className="mb-2 font-display text-lg font-bold">How it works</h2>
           <ul className="list-disc space-y-1 pl-5 text-sm leading-relaxed text-ink/80">
+            <li>Every match, singles and doubles, is best of 3 frames.</li>
             <li>Contact your opponent and agree a time, venue and referee before the deadline.</li>
             <li>Send the score to the league once your match is played.</li>
             <li>Winners go through — the next round is drawn once every result is in.</li>
