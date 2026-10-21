@@ -15,7 +15,7 @@ export type TournamentDoublesTie = {
   pair2: [string, string];
 };
 
-export const tournamentRound1Deadline = "2026-11-04"; // Wed 4 Nov
+export const tournamentRound1Deadline = "2026-11-21"; // 1 month from the draw, not 2 weeks
 
 export const tournamentEntryFees = { singles: 3, doubles: 5 };
 
