@@ -53,4 +53,5 @@ export const tournamentDoublesRound1: TournamentDoublesTie[] = [
   { id: "d9", pair1: ["Leanne Robbins", "Graham Dexter"], pair2: ["Ryan Davies", "Jimmy Howe"] },
   { id: "d10", pair1: ["Ryan Sheehan", "Dil"], pair2: ["Scott Mulheron", "Ollie Mulheron"] },
   { id: "d11", pair1: ["Wayne Bloxham", "Shaun Bennet"], pair2: ["Craig Guest", "Neil Williams"] },
+  { id: "d12", pair1: ["Stuart Saddington", "Craig Ward"], pair2: ["Jamie Saddington", "Carl Simpson"] },
 ];
