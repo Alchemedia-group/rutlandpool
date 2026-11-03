@@ -35,13 +35,20 @@ export function TournamentBracket({
       {tab === "singles" ? (
         <ul className="divide-y divide-ink/10">
           {singles.map((tie, i) => (
-            <TieRow key={tie.id} num={i + 1} a={tie.player1} b={tie.player2} />
+            <TieRow key={tie.id} num={i + 1} a={tie.player1} b={tie.player2} winner={tie.winner} score={tie.score} />
           ))}
         </ul>
       ) : (
         <ul className="divide-y divide-ink/10">
           {doubles.map((tie, i) => (
-            <TieRow key={tie.id} num={i + 1} a={tie.pair1.join(" & ")} b={tie.pair2.join(" & ")} />
+            <TieRow
+              key={tie.id}
+              num={i + 1}
+              a={tie.pair1.join(" & ")}
+              b={tie.pair2.join(" & ")}
+              winner={tie.winner}
+              score={tie.score}
+            />
           ))}
         </ul>
       )}
@@ -75,16 +82,41 @@ function TabButton({
   );
 }
 
-function TieRow({ num, a, b }: { num: number; a: string; b: string }) {
+function TieRow({
+  num,
+  a,
+  b,
+  winner,
+  score,
+}: {
+  num: number;
+  a: string;
+  b: string;
+  winner?: 1 | 2;
+  score?: string;
+}) {
+  const nameClass = (side: 1 | 2) =>
+    winner === undefined
+      ? "font-medium"
+      : winner === side
+        ? "font-bold text-felt-dark"
+        : "font-medium text-ink/40 line-through";
+
   return (
     <li className="flex flex-wrap items-center gap-x-3 gap-y-1 py-3">
       <span className="w-5 shrink-0 text-xs font-semibold text-ink/40">{num}</span>
-      <span className="min-w-0 flex-1 basis-32 font-medium">{a}</span>
+      <span className={`min-w-0 flex-1 basis-32 ${nameClass(1)}`}>{a}</span>
       <span className="shrink-0 font-display text-xs font-bold lowercase text-gold">v</span>
-      <span className="min-w-0 flex-1 basis-32 text-right font-medium sm:text-left">{b}</span>
-      <span className="ml-auto shrink-0 rounded border border-ink/15 px-3 py-1 font-display text-xs font-bold text-ink/30">
-        To play
-      </span>
+      <span className={`min-w-0 flex-1 basis-32 text-right sm:text-left ${nameClass(2)}`}>{b}</span>
+      {winner === undefined ? (
+        <span className="ml-auto shrink-0 rounded border border-ink/15 px-3 py-1 font-display text-xs font-bold text-ink/30">
+          To play
+        </span>
+      ) : (
+        <span className="ml-auto shrink-0 rounded border border-felt-dark bg-felt-dark px-3 py-1 font-display text-xs font-bold text-white">
+          {score ? `Won ${score}` : "Played"}
+        </span>
+      )}
     </li>
   );
 }
