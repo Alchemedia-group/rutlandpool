@@ -27,7 +27,7 @@ export const tournamentRound1Deadline = "2026-11-21"; // 1 month from the draw, 
 export const tournamentEntryFees = { singles: 3, doubles: 5 };
 
 export const tournamentSinglesRound1: TournamentSinglesTie[] = [
-  { id: "s1", player1: "Will Howe", player2: "Jack Towell" },
+  { id: "s1", player1: "Will Howe", player2: "Jack Towell", winner: 1 },
   { id: "s2", player1: "Leanne Robbins", player2: "Steve Brawn", winner: 1, score: "2-1" },
   { id: "s3", player1: "Stuart Saddington", player2: "Andy Saddington", winner: 1, score: "2-1" },
   { id: "s4", player1: "Freddy Williamson", player2: "Mel Guest", winner: 2, score: "2-1" },
@@ -53,7 +53,7 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
 // current published draw.
 export const tournamentDoublesRound1: TournamentDoublesTie[] = [
   { id: "d11", pair1: ["Wayne Bloxham", "Shaun Bennet"], pair2: ["Craig Guest", "Neil Williams"], winner: 1, score: "2-0" },
-  { id: "d2", pair1: ["Jack Towell", "Neil Roberton"], pair2: ["Nigel Halmshaw", "Rob Stimpson"] },
+  { id: "d2", pair1: ["Jack Towell", "Neil Roberton"], pair2: ["Nigel Halmshaw", "Rob Stimpson"], winner: 2 },
   { id: "d6a", pair1: ["Ollie Webb", "Will Howe"], pair2: ["Sam Blackwell", "Freddy Williamson"], winner: 1, score: "2-1" },
   { id: "d1", pair1: ["Andy Dougie Robb", "Wayne Clarke"], pair2: ["Rhys Hughes", "Dave Wildman"], winner: 2, score: "2-1" },
   { id: "d8a", pair1: ["Graeme Douglas", "Nigel Rose"], pair2: ["Scott Mulheron", "Ollie Mulheron"], winner: 1, score: "2-1" },
