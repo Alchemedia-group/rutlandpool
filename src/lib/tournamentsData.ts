@@ -45,7 +45,7 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
   { id: "s16", player1: "Sam Mcall", player2: "Remi Sadio", winner: 1, score: "2-1" },
   { id: "s17", player1: "Andy Dougie Robb", player2: "Wayne Bloxham", winner: 2, score: "2-1" },
   { id: "s18", player1: "Aaron Simpson", player2: "Melvin Ward", winner: 1, score: "2-0" },
-  { id: "s19", player1: "Neil Williams", player2: "Craig Guest" },
+  { id: "s19", player1: "Neil Williams", player2: "Craig Guest", winner: 2 },
 ];
 
 // Round 1 draw was reshuffled (same 24 players, re-randomized opponents) —
