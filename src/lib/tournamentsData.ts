@@ -35,7 +35,7 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
   { id: "s6", player1: "Kevin Southwell", player2: "John Robertson", winner: 2, score: "2-0" },
   { id: "s7", player1: "Rhys Hughes", player2: "Shaun Bennet", winner: 1, score: "2-1" },
   { id: "s8", player1: "Lewis Fitches", player2: "Ian Saddington", winner: 2, score: "2-0" },
-  { id: "s9", player1: "Kelly Easton", player2: "Ollie Webb" },
+  { id: "s9", player1: "Kelly Easton", player2: "Ollie Webb", winner: 2, score: "2-0" },
   { id: "s10", player1: "Carl Simpson", player2: "Sam Blackwell" },
   { id: "s11", player1: "Brennan Kirby", player2: "Jamie Saddington", winner: 2, score: "2-1" },
   { id: "s12", player1: "Rob Barker", player2: "Cam Saddington" },
@@ -45,7 +45,7 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
   { id: "s16", player1: "Sam Mcall", player2: "Remi Sadio", winner: 1, score: "2-1" },
   { id: "s17", player1: "Andy Dougie Robb", player2: "Wayne Bloxham", winner: 2, score: "2-1" },
   { id: "s18", player1: "Aaron Simpson", player2: "Melvin Ward", winner: 1, score: "2-0" },
-  { id: "s19", player1: "Neil Williams", player2: "Craig Guest", winner: 2 },
+  { id: "s19", player1: "Neil Williams", player2: "Craig Guest", winner: 2, score: "2-0" },
 ];
 
 // Round 1 draw was reshuffled (same 24 players, re-randomized opponents) —
