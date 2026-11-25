@@ -36,9 +36,9 @@ export const tournamentSinglesRound1: TournamentSinglesTie[] = [
   { id: "s7", player1: "Rhys Hughes", player2: "Shaun Bennet", winner: 1, score: "2-1" },
   { id: "s8", player1: "Lewis Fitches", player2: "Ian Saddington", winner: 2, score: "2-0" },
   { id: "s9", player1: "Kelly Easton", player2: "Ollie Webb", winner: 2, score: "2-0" },
-  { id: "s10", player1: "Carl Simpson", player2: "Sam Blackwell" },
+  { id: "s10", player1: "Carl Simpson", player2: "Sam Blackwell", winner: 1 }, // Sam conceded
   { id: "s11", player1: "Brennan Kirby", player2: "Jamie Saddington", winner: 2, score: "2-1" },
-  { id: "s12", player1: "Rob Barker", player2: "Cam Saddington" },
+  { id: "s12", player1: "Rob Barker", player2: "Cam Saddington", winner: 2 }, // Rob conceded
   { id: "s13", player1: "Graeme Douglas", player2: "Paul Dear", winner: 1, score: "2-1" },
   { id: "s14", player1: "Wayne Clarke", player2: "Mark Roberts", winner: 2, score: "2-1" },
   { id: "s15", player1: "Scott Webb", player2: "Mikie Hone", winner: 1, score: "2-0" },
